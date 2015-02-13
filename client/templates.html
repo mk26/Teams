@@ -1,0 +1,46 @@
+<template name="signup">
+        <div class="well col-sm-12 auth">
+            <img class="img-responsive center-block" src="/images/teams.png" alt="Teams Logo" width="175" height="175">
+            <h2 class="text-center">Let's get started{{name}}</h2>
+            <br>
+            <h4 class="text-center"><span class="glyphicon glyphicon-user"></span> Register</h4>
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4">
+                {{#autoForm schema=userSchema id="signupForm" type="method" meteormethod="signup"}}
+                <fieldset>
+                    {{> afQuickField name="name" id="name"}} 
+                    {{> afQuickField name="email"}} 
+                    {{> afQuickField name="password" type="password"}}
+                    <div>
+                        <button type="submit" class="btn btn-primary">Sign up <span class="glyphicon glyphicon-chevron-right"></span></button>
+                        <button type="reset" class="btn btn-default"><span class="glyphicon glyphicon-refresh"></span> Reset</button>
+                    </div>
+                </fieldset>
+                {{/autoForm}}
+            </div>
+            <div class="col-sm-4"></div>
+        </div>
+</template>
+
+<template name="login">
+        <div class="well col-sm-4 auth">
+            <div class="row col-sm-12">
+            <img class="pull-right" src="/images/teams.png" alt="Teams Logo" width="50" height="50">
+            <h4 class="pull-left"><span class="glyphicon glyphicon-log-in"></span><b>&nbsp;&nbsp;Login</b></h4></div>
+            <div class="row col-sm-12">
+                {{#autoForm schema=userSchema id="loginForm"}}
+                <fieldset>
+                    {{> afQuickField name="name"}} 
+                    {{> afQuickField name="email"}} 
+                    {{> afQuickField name="password" type="password"}}
+                    <div>
+                        <button type="submit" id="submit" class="btn btn-primary">Login <span class="glyphicon glyphicon-chevron-right"></span></button>
+                        <button type="reset" class="btn btn-default"><span class="glyphicon glyphicon-refresh"></span> Reset</button>
+                    </div>
+                </fieldset><br>
+                <div id="error" class="alert alert-danger" hidden="true"></div>
+                {{/autoForm}}
+            </div>
+        </div>
+</template>
+

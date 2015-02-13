@@ -1,0 +1,10 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+@import url(http://fonts.googleapis.com/css?family=Karla);
+
+body {
+	padding: 30px;
+}
+
+.auth {
+	font-family: Karla, Open Sans, sans-serif;
+}
