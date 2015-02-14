@@ -1,4 +1,4 @@
-UserSchema = new SimpleSchema({
+UserRegSchema = new SimpleSchema({
     name: {
         type: String,
         label: "Name"
@@ -11,7 +11,19 @@ UserSchema = new SimpleSchema({
     password: {
         type: String,
         label: "Password",
-        min: 6
+        min: 5
+    }
+});
+
+UserLoginSchema = new SimpleSchema({
+    email: {
+        type: String,
+        regEx: SimpleSchema.RegEx.Email,
+        label: "Email address"
+    },
+    password: {
+        type: String,
+        label: "Password",
     }
 });
 
@@ -53,7 +65,7 @@ TaskSchema = new SimpleSchema({
         optional: true
     },
     assignedto: {
-        type: [UserSchema],
+        type: [String],
         label: "Assigned to",
         optional: true
     }
@@ -65,11 +77,11 @@ MessageSchema = new SimpleSchema({
 		label: "Message"
 	},
 	from:{
-		type: UserSchema,
+		type: String,
 		label: "Sender"
 	},
 	to:{
-		type: [UserSchema],
+		type: [String],
 		label: "Recipient"
 	}
 });

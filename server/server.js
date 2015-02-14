@@ -1,6 +1,6 @@
 Meteor.methods({
 signup: function(doc) {
-	check(doc, UserSchema);
+	check(doc, UserRegSchema);
 	Accounts.createUser({
 		username: doc.email,
 		email: doc.email,

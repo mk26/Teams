@@ -2,6 +2,7 @@
 @import url(http://fonts.googleapis.com/css?family=Karla);
 
 body {
+	font-family: Karla, Open Sans, sans-serif !important;
 	padding: 30px;
 }
 

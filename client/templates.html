@@ -1,46 +1,100 @@
+<template name="commonlayout">
+    {{#if currentUser}}
+    <div class="panel panel-default panel-body pull-right">
+    <a class="btn btn-default btn-lg" href="/teams"><span class="glyphicon glyphicon-user"></span>&nbsp;{{uname}}</a><hr>
+    <button id="logout" class="btn btn-danger btn-xs col-lg-12"><span class="glyphicon glyphicon-log-out"></span> Logout</button>
+    </div>
+    {{/if}}
+    {{> yield}}
+</template>
+
+<template name="notfound">
+    <div class="alert alert-danger col-lg-6" role="alert">
+        <h1><span class="glyphicon glyphicon-remove-circle"></span>&nbsp;<b>404</b></h1>
+        <h2>Page Not found</h2>
+    </div>
+</template>
+
+<template name="home">
+    {{> yield}}
+</template>
+    
 <template name="signup">
-        <div class="well col-sm-12 auth">
-            <img class="img-responsive center-block" src="/images/teams.png" alt="Teams Logo" width="175" height="175">
-            <h2 class="text-center">Let's get started{{name}}</h2>
-            <br>
-            <h4 class="text-center"><span class="glyphicon glyphicon-user"></span> Register</h4>
-            <div class="col-sm-4"></div>
-            <div class="col-sm-4">
-                {{#autoForm schema=userSchema id="signupForm" type="method" meteormethod="signup"}}
-                <fieldset>
-                    {{> afQuickField name="name" id="name"}} 
-                    {{> afQuickField name="email"}} 
-                    {{> afQuickField name="password" type="password"}}
-                    <div>
-                        <button type="submit" class="btn btn-primary">Sign up <span class="glyphicon glyphicon-chevron-right"></span></button>
-                        <button type="reset" class="btn btn-default"><span class="glyphicon glyphicon-refresh"></span> Reset</button>
-                    </div>
-                </fieldset>
-                {{/autoForm}}
-            </div>
-            <div class="col-sm-4"></div>
+    <div class="well col-sm-12 auth">
+        <img class="img-responsive center-block" src="/images/teams.png" alt="Teams Logo" width="175" height="175">
+        <h2 class="text-center">Let's get started{{name}}</h2>
+        <br>
+        <h4 class="text-center">
+            <span class="glyphicon glyphicon-user"></span>&nbsp;Register</h4>
+        <div class="row col-sm-4 col-sm-offset-4">
+            {{#autoForm schema=userSchema id="signupForm" type="method" meteormethod="signup"}}
+            <fieldset>
+                {{> afQuickField name="name" id="name"}} {{> afQuickField name="email"}} {{> afQuickField name="password" type="password"}}
+                <div>
+                    <button type="submit" class="btn btn-primary">Sign up
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                    </button>
+                    <button type="reset" class="btn btn-default">
+                        <span class="glyphicon glyphicon-refresh"></span>&nbsp;Reset</button>
+                </div>
+            </fieldset><br>
+            <div id="error" class="alert alert-danger" hidden="true"></div>
+            {{/autoForm}}
         </div>
+    </div>
+    <div class="row pull-right center-block">
+    <button id="login" class="btn btn-success"><span class="glyphicon glyphicon-log-in"></span>&nbsp;&nbsp;Login with existing account</button>
+</div><div class="row"></div>
 </template>
 
 <template name="login">
-        <div class="well col-sm-4 auth">
-            <div class="row col-sm-12">
+    <div class="well well-lg col-sm-4 col-sm-offset-4 auth">
+        <div class="row">
             <img class="pull-right" src="/images/teams.png" alt="Teams Logo" width="50" height="50">
-            <h4 class="pull-left"><span class="glyphicon glyphicon-log-in"></span><b>&nbsp;&nbsp;Login</b></h4></div>
-            <div class="row col-sm-12">
-                {{#autoForm schema=userSchema id="loginForm"}}
-                <fieldset>
-                    {{> afQuickField name="name"}} 
-                    {{> afQuickField name="email"}} 
-                    {{> afQuickField name="password" type="password"}}
-                    <div>
-                        <button type="submit" id="submit" class="btn btn-primary">Login <span class="glyphicon glyphicon-chevron-right"></span></button>
-                        <button type="reset" class="btn btn-default"><span class="glyphicon glyphicon-refresh"></span> Reset</button>
-                    </div>
-                </fieldset><br>
-                <div id="error" class="alert alert-danger" hidden="true"></div>
-                {{/autoForm}}
-            </div>
+            <h4 class="pull-left">
+                <span class="glyphicon glyphicon-log-in"></span>
+                <b>&nbsp;&nbsp;Login</b>
+            </h4>
         </div>
+        <div class="row">
+            {{#autoForm schema=userSchema id="loginForm"}}
+            <fieldset>
+                {{> afQuickField name="name"}} {{> afQuickField name="email"}} {{> afQuickField name="password" type="password"}}
+                <div>
+                    <button type="submit" id="submit" class="btn btn-primary">Login
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                    </button>
+                    <button type="reset" class="btn btn-default">
+                        <span class="glyphicon glyphicon-refresh"></span>&nbsp;Reset</button>
+                </div>
+            </fieldset>
+            <br>
+            <div id="error" class="alert alert-danger" hidden="true"></div>
+            {{/autoForm}}
+        </div>
+    </div>
+    <button id="signup" class="btn btn-success btn-default pull-right"><span class="glyphicon glyphicon-plus"></span> Create Account</button>
 </template>
 
+<template name="teams">
+    <div class="container-fluid col-sm-4">
+    <div class="row">
+        <button class="btn btn-success btn-large">
+            <span class="glyphicon glyphicon-plus"></span>&nbsp;Create New Team</button>
+    </div><br>
+    <div class="row">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">EXISITING TEAMS</h3>
+            </div>
+            <div class="panel-body">
+                <div class="list-group">
+                    {{#each teams}}
+                    <a href="{{name}}" class="list-group-item">{{name}}<span class="glyphicon glyphicon-chevron-right pull-right"></span></a>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
