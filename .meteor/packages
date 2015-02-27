@@ -13,5 +13,6 @@ accounts-password
 accounts-base
 accounts-ui
 cfs:gridfs
-alanning:roles
 iron:router
+tsega:bootstrap3-datetimepicker
+momentjs:moment

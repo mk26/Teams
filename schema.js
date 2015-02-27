@@ -36,18 +36,41 @@ TeamSchema = new SimpleSchema({
     },
     members: {
         type: [String],
-        regEx: SimpleSchema.RegEx.Email,
-        label: "Users",
+        label: "Team Members",
         optional: true
+        //min: 1
     },
     admin: {
         type: String,
-        regEx: SimpleSchema.RegEx.Email,
-        label: "Admin",
+        regEx: SimpleSchema.RegEx.Id,
+        label: "Team Admin",
+    },
+    tasks:{
+        type: [String],
+        regEx: SimpleSchema.RegEx.Id,
+        label: "Task IDs",
+        optional: true
+    },
+    channels:{
+        type: [String],
+        regEx: SimpleSchema.RegEx.Id,
+        label: "Channel IDs",
+        optional: true
+    },
+    conversations:{
+        type: [String],
+        regEx: SimpleSchema.RegEx.Id,
+        label: "Conversation IDs",
+        optional: true
     }
+}); 
+TeamSchema.messages ({
+    "required admin": "Team must have an admin",
+    //"required members": "Team must have a minimum of 1 member"
 });
 Teams.attachSchema(TeamSchema);
 
+Tasks = new Mongo.Collection("tasks");
 TaskSchema = new SimpleSchema({
     name: {
         type: String,
@@ -55,7 +78,7 @@ TaskSchema = new SimpleSchema({
         min: 1
     },
     due: {
-        type: Date,
+        type: String,
         label: "Due Date",
         optional: true
     },
@@ -65,10 +88,21 @@ TaskSchema = new SimpleSchema({
         optional: true
     },
     assignedto: {
-        type: [String],
+        type:  String,
+        regEx: SimpleSchema.RegEx.Email,
         label: "Assigned to",
         optional: true
-    }
+    },
+    teamid:{
+        type: String,
+        regEx: SimpleSchema.RegEx.Id,
+        label: "Task part of Team",
+    }   
+});
+Tasks.attachSchema(TaskSchema);
+TaskSchema.messages ({
+    "required name": "Task must have a name",
+    "regEx assignedto": "Must be a valid email-ID",
 });
 
 MessageSchema = new SimpleSchema({
@@ -83,5 +117,9 @@ MessageSchema = new SimpleSchema({
 	to:{
 		type: [String],
 		label: "Recipient"
+	},
+	timestamp:{
+    	type: String,
+    	label: "timestamp"
 	}
 });

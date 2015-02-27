@@ -1,11 +1,37 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans);
 @import url(http://fonts.googleapis.com/css?family=Karla);
 
 body {
-	font-family: Karla, Open Sans, sans-serif !important;
+	font-family: Karla, Helvetica Neue, sans-serif !important;
 	padding: 30px;
+	-webkit-user-select: none;
 }
 
 .auth {
-	font-family: Karla, Open Sans, sans-serif;
+	font-family: Karla, Helvetica Neue, sans-serif;
+}
+
+.tooltip {
+	font-family: Karla, sans-serif;
+}
+button:hover, a:hover {
+	cursor: default;
+}
+#teamslink {
+	opacity: 0.8;
+	-webkit-transition: all 0.3s ease;
+}
+#teamslink:hover {
+	opacity: 1.0;
+}
+#teamslink:active {
+	opacity: 1.0;
+	-webkit-filter: brightness(85%);
+}
+
+.mk-token {
+	border-radius: 2px;
+	color: white;
+	background-color: rgba(101, 206, 255, 0.920);
+	padding: 2px 10px 2px 10px;
+	
 }
