@@ -5,7 +5,8 @@ Template.registerHelper('uname',function() {
 });
 
 Template.registerHelper('isAdmin',function() {
-	if(Meteor.userId() == this.admin) 
+	var currentTeam = Teams.findOne({"_id":Session.get('currentTeam')});
+	if(Meteor.userId() == currentTeam.admin) 
 		return true;
 	else 
 		return false;
@@ -30,7 +31,6 @@ UI.registerHelper("showName", function(obj){
 	if(obj) return Meteor.users.findOne({"username":obj}).profile.name;
 });
 
-
 Template.commonlayout.events({
 	'click #back' : function(e,t) {
 		history.go(-1);
@@ -47,23 +47,7 @@ Template.commonlayout.events({
 });
 
 Template.account.events({
-	'click #back' : function(e,t) {
-		history.go(-1);
-	}
-});
 
-Template.teams.events({
-	'click #createb' : function(e,t) {
-		Router.go('/teams/create');
-		//t.$('#createb').prop("disabled",true);
-	}
-});
-
-Template.createteam.events({
-	'click #back' : function(e,t) {
-		//Template.teams.$('#createb').prop("disabled",false);
-		Router.go('/teams');
-	}
 });
 
 /* User Management */
@@ -95,12 +79,6 @@ Template.login.events({
 Template.login.helpers({
 	userSchema: function() {
 		return UserLoginSchema;
-	}
-});
-
-Template.createteam.helpers({
-	teamSchema: function() {
-		return TeamSchema;
 	}
 });
 
@@ -154,20 +132,68 @@ AutoForm.hooks({
 	},
 	createTaskForm: {
 		before: {
-			insert: function(doc, template) {
-				doc.teamid = Session.get('currentTeam');
+			"createTask": function(doc, template) {
+				doc._id = new Mongo.ObjectID().toHexString();
+				doc.teamID = Session.get('currentTeam');
 				return doc;
 			}
 		},
+		after: {
+			"createTask": function(doc, template) {
+				this.template.$('#tasktags').tokenfield('setTokens',[]);
+			}
+		}
+	},
+	updateMembersForm: {
+		docToForm: function(doc) {
+		  doc.members.forEach(function(mem, i) {
+			  doc.members[i] = Meteor.users.findOne({"_id":mem}).username;
+		  });
+		  return doc;
+		},
+		formToDoc: function(doc) {
+		  doc.members.forEach(function(mem, i) {
+			  var tmp = Meteor.users.findOne({"username":mem})._id;
+			  if(tmp) doc.members[i] = tmp;
+		  });
+		  return doc;
+		},
+		onError: function(operation, error, template) {
+			this.resetForm();
+		},
 		after : {
-			insert: function(error, result, template) {
-				Teams.update({"_id":Session.get('currentTeam')},{$addToSet: {tasks:result}});
+			update : function(error, result, template) {
+				this.resetForm();
+				this.template.$('#members').tokenfield();
 			}
 		}
 	}
 });
 
+AutoForm.addHooks(null, {
+	after: {
+			"updateTask": function(doc, template) {
+				this.template.$('.tasktagse').tokenfield({
+	createTokensOnBlur:true
+			});
+				this.template.$('.editTaskPanel').slideToggle();
+			}
+		}
+	}
+);
+
 /* All Teams page */
+
+Template.teams.events({
+	'click #createb' : function(e,t) {
+		$('#createTeamPanel').slideToggle();
+		//Router.go('/teams/create');
+		//t.$('#createb').prop("disabled",true);
+	},
+	'click .markTask' : function(e) {
+		Meteor.call('markTask',this,e.target.checked);
+	}
+});
 
 Template.teams.helpers({
 	memteams: function() {
@@ -176,10 +202,25 @@ Template.teams.helpers({
 	},
 	adminteams:function() {
 		return Teams.find({'admin':Meteor.userId()});
+	},
+	tasks: function() {
+		t_id = Session.get('currentTeam');
+		var result = [];
+		var tasks = Teams.find({"tasks":{$elemMatch: {"assignedto" : Meteor.user().username}}},{fields: {name:1, tasks:1}}).fetch();
+		tasks.forEach(function(team, i) {
+			team.tasks.forEach(function(task, i) {
+				if(task.assignedto == Meteor.user().username)
+				{	task.teamID = team._id;
+					task.teamName = team.name;
+					result.push(task);
+				}
+			});
+		});
+		return result;
 	}
 });
 
-Template.createteam.rendered = function() {
+Template.teams.rendered = function() {
 	$('#members').tokenfield({
 		inputType:'email'
 	});
@@ -194,8 +235,17 @@ Template.team.helpers({
 	tasks: function() {
 		t_id = Session.get('currentTeam');
 		//return Tasks.find();
-		//var task_ids = Teams.findOne({"_id":t_id},{"tasks":1});
-		return Tasks.find({"teamid":t_id}).fetch();
+		var tasks = Teams.findOne({"_id":t_id},{"tasks":1}).tasks;
+		//return Tasks.find({"teamid":t_id}).fetch();
+		return tasks;
+	},
+	ownsTask:function() {
+		if (this.assignedto == Meteor.user().username) 
+			return true;
+		else return false;
+	},
+	TaskSchema:function() {
+		return TaskSchema;
 	}
 });
 
@@ -206,12 +256,38 @@ Template.team.events({
 	'click #infob' : function(e,t) {
 		t_id = Session.get('currentTeam');
 		Router.go('/t/'+t_id+'/info/');
+	},
+	'click #createtaskb' : function(e,t) {
+		$('#newTask').slideToggle();
+	},
+	'click .markTask' : function(e) {
+		Meteor.call('markTask',this,e.target.checked);
+	},
+	'click .delTask' : function(e) {
+		Meteor.call('delTask',this);
+	},
+	'click .editTask' : function(e) {
+		$('#'+this._id).slideToggle();
 	}
 });
 
 Template.team.rendered = function() {
-	$('#tasktags').tokenfield();
+	/*$('#taskassigned').tokenfield({
+		limit:1,
+		autocomplete:{
+			source:['a@a.a','b@b.b'],
+			delay: 100
+		},
+		showAutocompleteOnFocus: true
+	});*/
+	$('#tasktags').tokenfield({
+		createTokensOnBlur:true
+	});
+	$('.tasktagse').tokenfield({
+		createTokensOnBlur:true
+	});
 	$('#taskduedate').datetimepicker();
+	$('.taskduedatee').datetimepicker();
 	$('.taskassignedto').tooltip();
 };
 
@@ -223,9 +299,13 @@ Template.teaminfo.helpers({
 });
 
 Template.teaminfo.rendered = function() {
-	$('#members').tokenfield({
-		inputType:'email'
-	});
+	$('#members').on('tokenfield:createdtoken', function (e) {
+ 	var re = /\S+@\S+\.\S+/
+ 	var valid = re.test(e.attrs.value)
+ 	if (!valid) {
+ 	  $(e.relatedTarget).addClass('invalid')
+ 	}
+   }).tokenfield();
 	var unames = [];
 	/*var ids = [];
 	ids.push($('#members').tokenfield('getTokensList'));
@@ -241,7 +321,7 @@ Template.teaminfo.events({
 		history.go(-1);
 	},
 	'click #addb' : function(e,t) {
-		$('#addcontainer').toggle();
+		$('#addcontainer').slideToggle();
 	},
 	'click #deleteb' : function(e,t) {
 		t_id = Session.get('currentTeam');

@@ -27,6 +27,51 @@ UserLoginSchema = new SimpleSchema({
     }
 });
 
+//Tasks = new Mongo.Collection("tasks");
+TaskSchema = new SimpleSchema({
+    name: {
+        type: String,
+        label: "Name",
+        min: 1
+    },
+    due: {
+        type: String,
+        label: "Due Date",
+        optional: true,
+    },
+    tags: {
+        type: [String],
+        label: "Tags",
+        optional: true,
+    },
+    assignedto: {
+        type:  String,
+        regEx: SimpleSchema.RegEx.Email,
+        label: "Assigned to",
+        optional: true,
+    },
+    status: {
+        type: Boolean,
+        label: "Status",
+        optional: true      
+    },
+    _id: {
+        type: String,
+        label: "ID"
+    },
+    teamID: {
+        type: String,
+        regEx: SimpleSchema.RegEx.Id,
+        label: "Team ID",
+        optional:true
+    }
+});
+//Tasks.attachSchema(TaskSchema);
+TaskSchema.messages ({
+    "required name": "Task must have a name",
+    "regEx assignedto": "Must be a valid email-ID",
+});
+
 Teams = new Mongo.Collection("teams");
 TeamSchema = new SimpleSchema({
     name: {
@@ -46,9 +91,8 @@ TeamSchema = new SimpleSchema({
         label: "Team Admin",
     },
     tasks:{
-        type: [String],
-        regEx: SimpleSchema.RegEx.Id,
-        label: "Task IDs",
+        type: [TaskSchema],
+        label: "Tasks",
         optional: true
     },
     channels:{
@@ -70,40 +114,6 @@ TeamSchema.messages ({
 });
 Teams.attachSchema(TeamSchema);
 
-Tasks = new Mongo.Collection("tasks");
-TaskSchema = new SimpleSchema({
-    name: {
-        type: String,
-        label: "Name",
-        min: 1
-    },
-    due: {
-        type: String,
-        label: "Due Date",
-        optional: true
-    },
-    tags: {
-        type: [String],
-        label: "Tags",
-        optional: true
-    },
-    assignedto: {
-        type:  String,
-        regEx: SimpleSchema.RegEx.Email,
-        label: "Assigned to",
-        optional: true
-    },
-    teamid:{
-        type: String,
-        regEx: SimpleSchema.RegEx.Id,
-        label: "Task part of Team",
-    }   
-});
-Tasks.attachSchema(TaskSchema);
-TaskSchema.messages ({
-    "required name": "Task must have a name",
-    "regEx assignedto": "Must be a valid email-ID",
-});
 
 MessageSchema = new SimpleSchema({
 	message: {

@@ -4,19 +4,19 @@ body {
 	font-family: Karla, Helvetica Neue, sans-serif !important;
 	padding: 30px;
 	-webkit-user-select: none;
+	cursor: default;
 }
 
-.auth {
-	font-family: Karla, Helvetica Neue, sans-serif;
+button:hover, a:hover {
+	cursor: default;
 }
 
 .tooltip {
 	font-family: Karla, sans-serif;
 }
-button:hover, a:hover {
-	cursor: default;
-}
+
 #teamslink {
+	text-decoration: none;
 	opacity: 0.8;
 	-webkit-transition: all 0.3s ease;
 }
@@ -29,9 +29,12 @@ button:hover, a:hover {
 }
 
 .mk-token {
-	border-radius: 2px;
+	border-radius: 3px;
 	color: white;
-	background-color: rgba(101, 206, 255, 0.920);
+	background-color: rgba(98, 178, 243, 1);
 	padding: 2px 10px 2px 10px;
-	
+}
+
+.markTask {
+	font-size: 150%;
 }

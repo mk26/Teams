@@ -47,5 +47,36 @@ Meteor.methods({
 				Meteor.users.update({'_id':member},{$pull: {'profile.memberOf' : t_id}});
 		});
 		Teams.remove({"_id":t_id});
+	},
+	createTask: function(doc) {
+		check(doc,TaskSchema);
+		Teams.update({"_id":doc.teamID},{$push : {
+			tasks: {
+					_id: doc._id,
+					name: doc.name,
+					assignedto: doc.assignedto,
+					due: doc.due,
+					status: doc.status,
+					tags: doc.tags
+				}
+			}
+		});
+	},
+	markTask : function(task,checkValue) {
+		Teams.update({"tasks._id" : task._id},{$set: {"tasks.$.status":checkValue}});
+	},
+	delTask : function(task) {
+		Teams.update({},{$pull: {tasks : {"_id" : task._id}}},{multi:true});
+		//Teams.update({},{$pull: {"tasks" : null}});
+	},
+	updateTask : function(doc) {
+		check(doc,TaskSchema);
+		Teams.update({"tasks._id" : doc._id},{$set : {
+					"tasks.$.name": doc.name,
+					"tasks.$.assignedto": doc.assignedto,
+					"tasks.$.due": doc.due,
+					"tasks.$.tags": doc.tags
+			}
+		});
 	}
 });

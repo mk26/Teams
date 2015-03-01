@@ -4,32 +4,30 @@ Router.configure({
 });
 
 Router.onBeforeAction(function () {
-  if (!Meteor.user()) {
-    this.render('login');
+  if (Meteor.user()) {
+      this.next();
   } 
-  else {
-    this.next();
-  }
+  else this.render('login');
 },{
     except:['signup','login']
 });
 
 Router.route('/', function () {
-    this.render('teams');
+    this.redirect('/teams');
 });
 
 Router.route('/signup', function () {
-    if(!Meteor.user()) {
-        this.render('signup');
+    if(Meteor.user()) {
+        this.redirect('/teams');
     }
-    else this.redirect('/teams');
+    else this.render('signup');
 });
 
 Router.route('/login', function () {
-    if(!Meteor.user()) {
-        this.render('login');
+    if(Meteor.user()) {
+        this.redirect('/teams');
     }
-    else this.redirect('/teams');
+    else this.render('login');
 });
 
 Router.route('/teams', function () {
@@ -68,7 +66,6 @@ Router.route('/t/:_id/info', function () {
 });
 
 Router.route('/teams/create', function () {
-   //this.render('teams');
    this.render('createteam');
 });
 
