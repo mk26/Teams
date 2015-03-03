@@ -1,20 +1,21 @@
 @import url(http://fonts.googleapis.com/css?family=Karla);
 
+/* Common */
 body {
 	font-family: Karla, Helvetica Neue, sans-serif !important;
 	padding: 30px;
 	-webkit-user-select: none;
 	cursor: default;
 }
-
 button:hover, a:hover {
 	cursor: default;
 }
-
 .tooltip {
 	font-family: Karla, sans-serif;
 }
-
+.teams-error {
+	font-family: Inconsolata, monospace;
+}
 #teamslink {
 	text-decoration: none;
 	opacity: 0.8;
@@ -28,13 +29,38 @@ button:hover, a:hover {
 	-webkit-filter: brightness(85%);
 }
 
+/* Task management UI changes */
+.markTask {
+	font-size: 150%;
+}
+input[type="checkbox"] + strong {
+   -webkit-transition: all 0.3s ease;
+   transition: all 0.3s ease;
+}
+.list-group-item.true {
+	background-color:rgba(232, 232, 232, 0.5);
+	opacity: 0.5;
+	-webkit-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+}
+.list-group-item.false {
+    opacity: 1.0;
+	-webkit-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+}
+:checked + strong {
+   text-decoration: line-through;
+   color: gray;
+}
+:checked + strong +.tasktags {
+   text-decoration: line-through;
+   color: gray;
+}
+
+/* Other */
 .mk-token {
 	border-radius: 3px;
 	color: white;
 	background-color: rgba(98, 178, 243, 1);
 	padding: 2px 10px 2px 10px;
-}
-
-.markTask {
-	font-size: 150%;
 }

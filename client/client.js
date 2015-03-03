@@ -1,9 +1,11 @@
-/* Main Template */
+/* Common functions */
 
+//Get User's name
 Template.registerHelper('uname',function() {
 	return Meteor.user().profile.name;
 });
 
+//Check whether the current user is the Admin of the Team
 Template.registerHelper('isAdmin',function() {
 	var currentTeam = Teams.findOne({"_id":Session.get('currentTeam')});
 	if(Meteor.userId() == currentTeam.admin) 
@@ -12,6 +14,7 @@ Template.registerHelper('isAdmin',function() {
 		return false;
 });
 
+//Check whether the current user is a Member of the Team
 Template.registerHelper('isMember',function() {
 	if($.inArray(Meteor.userId(),this.members)==-1) 
 		return false;
@@ -19,6 +22,7 @@ Template.registerHelper('isMember',function() {
 		return true;
 });
 
+//Map User ID to Name
 UI.registerHelper("expand", function(obj){
 	var result = [];
 	for (var id in obj) {
@@ -27,10 +31,12 @@ UI.registerHelper("expand", function(obj){
 	return result;
 });
 
+//Map Username to Name
 UI.registerHelper("showName", function(obj){
 	if(obj) return Meteor.users.findOne({"username":obj}).profile.name;
 });
 
+//Go Back, Logout
 Template.commonlayout.events({
 	'click #back' : function(e,t) {
 		history.go(-1);
@@ -46,11 +52,28 @@ Template.commonlayout.events({
 	}
 });
 
+/* User Management */
+
+//Account page
+Template.account.helpers({
+	username: function() {
+		return Meteor.user().username;
+	}
+});
+
 Template.account.events({
 
 });
 
-/* User Management */
+//Signup page
+Template.signup.helpers({
+	name : function() {
+		return Session.get('name') ? ", "+Session.get('name') : "";
+	},
+	userSchema: function() {
+		return UserRegSchema;
+	}
+});
 
 Template.signup.events({
 	'keyup #name' : function(e,t) {
@@ -61,12 +84,10 @@ Template.signup.events({
 	}	
 });
 
-Template.signup.helpers({
-	name : function() {
-		return Session.get('name') ? ", "+Session.get('name') : "";
-	},
+//Login page
+Template.login.helpers({
 	userSchema: function() {
-		return UserRegSchema;
+		return UserLoginSchema;
 	}
 });
 
@@ -76,11 +97,7 @@ Template.login.events({
 	}
 });
 
-Template.login.helpers({
-	userSchema: function() {
-		return UserLoginSchema;
-	}
-});
+/* Form-related functionality across the app */
 
 AutoForm.hooks({
 	signupForm: {
@@ -176,25 +193,16 @@ AutoForm.addHooks(null, {
 				this.template.$('.tasktagse').tokenfield({
 	createTokensOnBlur:true
 			});
-				this.template.$('.editTaskPanel').slideToggle();
+				this.template.$('.taskduedatee').datetimepicker();
+				//this.template.$('.editTaskPanel').slideToggle();
 			}
 		}
 	}
 );
 
-/* All Teams page */
+/* Teams Functionality */
 
-Template.teams.events({
-	'click #createb' : function(e,t) {
-		$('#createTeamPanel').slideToggle();
-		//Router.go('/teams/create');
-		//t.$('#createb').prop("disabled",true);
-	},
-	'click .markTask' : function(e) {
-		Meteor.call('markTask',this,e.target.checked);
-	}
-});
-
+//All Teams page
 Template.teams.helpers({
 	memteams: function() {
 		return Teams.find({'members':Meteor.userId()});
@@ -216,7 +224,34 @@ Template.teams.helpers({
 				}
 			});
 		});
-		return result;
+		var sort_order = Session.get('sortOrder') ? Session.get('sortOrder') : "name";
+		return _.sortBy(result,function(e) {
+			return e[sort_order];
+		});
+		//return result;
+	}
+});
+
+Template.teams.events({
+	'click #createb' : function(e,t) {
+		$('#createTeamPanel').slideToggle();
+		//Router.go('/teams/create');
+		//t.$('#createb').prop("disabled",true);
+	},
+	'click .markTask' : function(e) {
+		Meteor.call('markTask',this,e.target.checked);
+	},
+	'change #sortByName' : function(e) {
+		Session.set('sortOrder','name');
+	},
+	'change #sortByDue' : function(e) {
+		Session.set('sortOrder','due');
+	},
+	'change #sortByAssigned' : function(e) {
+		Session.set('sortOrder','assignedto');
+	},
+	'change #sortByStatus' : function(e) {
+		Session.set('sortOrder','status');
 	}
 });
 
@@ -226,18 +261,20 @@ Template.teams.rendered = function() {
 	});
 };
 
-/* Team page */
-
+//Specific Team page
 Template.team.helpers({
 	name: function() {
 		return this.name;
 	},
 	tasks: function() {
-		t_id = Session.get('currentTeam');
+		var t_id = Session.get('currentTeam');
+		var sort_order = Session.get('sortOrder') ? Session.get('sortOrder') : "name";
 		//return Tasks.find();
 		var tasks = Teams.findOne({"_id":t_id},{"tasks":1}).tasks;
+		return _.sortBy(tasks,function(e) {
+			return e[sort_order];
+		});
 		//return Tasks.find({"teamid":t_id}).fetch();
-		return tasks;
 	},
 	ownsTask:function() {
 		if (this.assignedto == Meteor.user().username) 
@@ -246,6 +283,18 @@ Template.team.helpers({
 	},
 	TaskSchema:function() {
 		return TaskSchema;
+	},
+	teamMembers:function() {
+		var t_id = Session.get('currentTeam');
+		var members = Teams.findOne({"_id":t_id}).members;
+		var team = {};
+		members.forEach(function(e, i) {
+			var member = Meteor.users.findOne({"_id":e});
+			var memberName = member.profile.name;
+			var memberEmail = member.username;
+			team[memberEmail] = memberName+" <"+memberEmail+">";
+		});
+		return team;
 	}
 });
 
@@ -267,34 +316,57 @@ Template.team.events({
 		Meteor.call('delTask',this);
 	},
 	'click .editTask' : function(e) {
+		$('.tasktagse').tokenfield({
+			createTokensOnBlur:true
+		});
+		$('.taskduedatee').datetimepicker();
 		$('#'+this._id).slideToggle();
+	},
+	'change #sortByName' : function(e) {
+		Session.set('sortOrder','name');
+	},
+	'change #sortByDue' : function(e) {
+		Session.set('sortOrder','due');
+	},
+	'change #sortByAssigned' : function(e) {
+		Session.set('sortOrder','assignedto');
+	},
+	'change #sortByStatus' : function(e) {
+		Session.set('sortOrder','status');
 	}
 });
 
 Template.team.rendered = function() {
-	/*$('#taskassigned').tokenfield({
-		limit:1,
-		autocomplete:{
-			source:['a@a.a','b@b.b'],
-			delay: 100
-		},
-		showAutocompleteOnFocus: true
-	});*/
 	$('#tasktags').tokenfield({
 		createTokensOnBlur:true
 	});
+	$('#taskduedate').datetimepicker();
 	$('.tasktagse').tokenfield({
 		createTokensOnBlur:true
 	});
-	$('#taskduedate').datetimepicker();
 	$('.taskduedatee').datetimepicker();
 	$('.taskassignedto').tooltip();
 };
 
+//Team info page
 Template.teaminfo.helpers({
 	admin: function() {
 		var user = Meteor.users.findOne({"_id":this.admin});
 		return user.profile.name;
+	}
+});
+
+Template.teaminfo.events({
+	'click #back' : function(e,t) {
+		history.go(-1);
+	},
+	'click #addb' : function(e,t) {
+		$('#addcontainer').slideToggle();
+	},
+	'click #deleteb' : function(e,t) {
+		t_id = Session.get('currentTeam');
+		Meteor.call('deleteTeam', t_id);
+		Router.go('/teams');
 	}
 });
 
@@ -315,17 +387,3 @@ Template.teaminfo.rendered = function() {
 	});
 	$('#members').tokenfield('setTokens',unames);*/
 };
-
-Template.teaminfo.events({
-	'click #back' : function(e,t) {
-		history.go(-1);
-	},
-	'click #addb' : function(e,t) {
-		$('#addcontainer').slideToggle();
-	},
-	'click #deleteb' : function(e,t) {
-		t_id = Session.get('currentTeam');
-		Meteor.call('deleteTeam', t_id);
-		Router.go('/teams');
-	}
-});

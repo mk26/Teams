@@ -1,3 +1,4 @@
+//Server side methods
 Meteor.methods({
 	signup: function(doc) {
 		check(doc, UserRegSchema);

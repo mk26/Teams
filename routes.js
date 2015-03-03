@@ -38,6 +38,7 @@ Router.route('/t/:_id', function () {
    var teamID = this.params._id;
    Session.set('currentTeam',teamID);
    var team = Teams.findOne({"_id":this.params._id})
+   if(team) {
    if($.inArray(Meteor.userId(),team.members)!=-1 || Meteor.userId() == team.admin) {
        this.render('team',{
          data:function(){
@@ -48,6 +49,10 @@ Router.route('/t/:_id', function () {
     else {
         this.render('accessdenied');
     }
+ }
+ else {
+     this.render('notfound');
+ }
 });
 
 Router.route('/t/:_id/info', function () {

@@ -1,3 +1,4 @@
+//User Registration
 UserRegSchema = new SimpleSchema({
     name: {
         type: String,
@@ -15,6 +16,7 @@ UserRegSchema = new SimpleSchema({
     }
 });
 
+//User Login
 UserLoginSchema = new SimpleSchema({
     email: {
         type: String,
@@ -27,7 +29,7 @@ UserLoginSchema = new SimpleSchema({
     }
 });
 
-//Tasks = new Mongo.Collection("tasks");
+//Tasks
 TaskSchema = new SimpleSchema({
     name: {
         type: String,
@@ -66,12 +68,65 @@ TaskSchema = new SimpleSchema({
         optional:true
     }
 });
-//Tasks.attachSchema(TaskSchema);
 TaskSchema.messages ({
     "required name": "Task must have a name",
     "regEx assignedto": "Must be a valid email-ID",
 });
 
+//Messages
+Messages = new Mongo.Collection("messages");
+MessageSchema = new SimpleSchema({
+    message: {
+        type: String,
+        label: "Message"
+    },
+    from:{
+        type: String,
+        label: "Sender"
+    },
+    to:{
+        type: [String],
+        label: "Recipient"
+    },
+    timestamp:{
+        type: String,
+        label: "timestamp"
+    }
+});
+Messages.attachSchema(MessageSchema);
+
+//Channels
+ChannelSchema = new SimpleSchema({
+    name: {
+        type: String,
+        label: "Name",
+        min: 1
+    },
+    messages : {
+        type: [MessageSchema],
+        optional: true
+    }
+});
+
+//Conversations
+ConversationSchema = new SimpleSchema({
+    name: {
+        type: String,
+        label: "Name",
+        min: 1
+    },
+    members: {
+        type: [String],
+        regEx: SimpleSchema.RegEx.Email,
+        label: "Conversation members"
+    },
+    messages : {
+        type: [MessageSchema],
+        optional: true
+    }
+});
+
+//Teams
 Teams = new Mongo.Collection("teams");
 TeamSchema = new SimpleSchema({
     name: {
@@ -113,23 +168,3 @@ TeamSchema.messages ({
     //"required members": "Team must have a minimum of 1 member"
 });
 Teams.attachSchema(TeamSchema);
-
-
-MessageSchema = new SimpleSchema({
-	message: {
-		type: String,
-		label: "Message"
-	},
-	from:{
-		type: String,
-		label: "Sender"
-	},
-	to:{
-		type: [String],
-		label: "Recipient"
-	},
-	timestamp:{
-    	type: String,
-    	label: "timestamp"
-	}
-});

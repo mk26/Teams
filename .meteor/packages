@@ -16,3 +16,4 @@ cfs:gridfs
 iron:router
 tsega:bootstrap3-datetimepicker
 momentjs:moment
+u2622:persistent-session
