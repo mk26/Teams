@@ -39,7 +39,7 @@ Router.route('/t/:_id', function () {
    Session.set('currentTeam',teamID);
    var team = Teams.findOne({"_id":this.params._id})
    if(team) {
-   if($.inArray(Meteor.userId(),team.members)!=-1 || Meteor.userId() == team.admin) {
+   if($.inArray(Meteor.user().username,team.members)!=-1 || Meteor.user().username == team.admin) {
        this.render('team',{
          data:function(){
            return team;
@@ -49,7 +49,7 @@ Router.route('/t/:_id', function () {
     else {
         this.render('accessdenied');
     }
- }
+    }
  else {
      this.render('notfound');
  }
@@ -58,7 +58,7 @@ Router.route('/t/:_id', function () {
 Router.route('/t/:_id/info', function () {
    var teamID = this.params._id;
    var team = Teams.findOne({"_id":this.params._id})
-   if($.inArray(Meteor.userId(),team.members)!=-1 || Meteor.userId() == team.admin) {
+   if($.inArray(Meteor.user().username,team.members)!=-1 || Meteor.user().username == team.admin) {
        this.render('teaminfo',{
          data:function(){
            return team;

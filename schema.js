@@ -12,7 +12,7 @@ UserRegSchema = new SimpleSchema({
     password: {
         type: String,
         label: "Password",
-        min: 5
+        min: 3
     }
 });
 
@@ -86,7 +86,8 @@ MessageSchema = new SimpleSchema({
     },
     to:{
         type: [String],
-        label: "Recipient"
+        label: "Recipient",
+        optional:true
     },
     timestamp:{
         type: String,
@@ -96,6 +97,7 @@ MessageSchema = new SimpleSchema({
 Messages.attachSchema(MessageSchema);
 
 //Channels
+Channels = new Mongo.Collection("channels");
 ChannelSchema = new SimpleSchema({
     name: {
         type: String,
@@ -103,28 +105,33 @@ ChannelSchema = new SimpleSchema({
         min: 1
     },
     messages : {
-        type: [MessageSchema],
+        type: [String],
+        regEx: SimpleSchema.RegEx.Id,
         optional: true
     }
 });
+Channels.attachSchema(ChannelSchema);
 
 //Conversations
+Conversations = new Mongo.Collection("conversations");
 ConversationSchema = new SimpleSchema({
-    name: {
-        type: String,
-        label: "Name",
-        min: 1
-    },
     members: {
         type: [String],
         regEx: SimpleSchema.RegEx.Email,
         label: "Conversation members"
     },
+    owner : {
+        type: String,
+        regEx: SimpleSchema.RegEx.Email,
+        label: "Conversation owner"
+    },
     messages : {
-        type: [MessageSchema],
+        type: [String],
+        regEx: SimpleSchema.RegEx.Id,
         optional: true
     }
 });
+Conversations.attachSchema(ConversationSchema);
 
 //Teams
 Teams = new Mongo.Collection("teams");
@@ -136,13 +143,14 @@ TeamSchema = new SimpleSchema({
     },
     members: {
         type: [String],
+        regEx: SimpleSchema.RegEx.Email,
         label: "Team Members",
-        optional: true
-        //min: 1
+        optional: true,
+        unique: true
     },
     admin: {
         type: String,
-        regEx: SimpleSchema.RegEx.Id,
+        regEx: SimpleSchema.RegEx.Email,
         label: "Team Admin",
     },
     tasks:{
@@ -168,3 +176,13 @@ TeamSchema.messages ({
     //"required members": "Team must have a minimum of 1 member"
 });
 Teams.attachSchema(TeamSchema);
+
+TeamMembersSchema = new SimpleSchema ({
+    members: {
+        type: [String],
+        regEx: SimpleSchema.RegEx.Email,
+        label: "Team Members",
+        optional: true,
+        unique: true
+    }
+});
