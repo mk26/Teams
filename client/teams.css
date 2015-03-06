@@ -28,6 +28,10 @@ button:hover, a:hover {
 	opacity: 1.0;
 	-webkit-filter: brightness(85%);
 }
+#loginPanel {
+	-webkit-animation-duration: 0.7s;
+	animation-duration: 0.7s;
+}
 
 /* Task management UI changes */
 .markTask {
@@ -42,7 +46,6 @@ input[type="checkbox"] + strong {
 	opacity: 0.5;
 	-webkit-transition: all 0.5s ease;
 	transition: all 0.5s ease;
-	-webkit-animation: flipOutX 1s;
 }
 .list-group-item.false {
     opacity: 1.0;
@@ -58,7 +61,7 @@ input[type="checkbox"] + strong {
    color: gray;
 }
 
-/* Other */
+/* Tokens */
 .mk-token {
 	border-radius: 3px;
 	color: white;
@@ -66,6 +69,19 @@ input[type="checkbox"] + strong {
 	padding: 2px 10px 2px 10px;
 }
 
+.mk-token-n {
+	border-radius: 10px;
+	color: white;
+	background-color: rgba(66, 48, 164, 0.7);
+	padding: 2px 10px 2px 10px;
+}
+
+.delChannel, .delConv {
+	margin-top: -3px;
+	margin-right: 3px;
+}
+
+/* Messaging */
 .messageView {
 	position: relative;
 	padding: 10px 0px 10px 0px;
@@ -150,9 +166,4 @@ input[type="checkbox"] + strong {
 
 .timestamp {
 	color: rgba(190, 190, 190, 1);
-}
-
-#loginPanel {
-	-webkit-animation-duration: 0.7s;
-	animation-duration: 0.7s;
 }

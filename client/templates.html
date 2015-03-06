@@ -231,13 +231,13 @@
                             <span class="glyphicon glyphicon-sort-by-attributes pull-right"></span>
                             <br>
                         </label>
-                        <label class="btn btn-primary active">
+                        <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByName" autocomplete="off" checked>Name</label>
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByDue" autocomplete="off">Due</label>
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByAssigned" autocomplete="off">Assigned to</label>
-                        <label class="btn btn-primary">
+                        <label class="btn btn-primary active">
                             <input type="radio" name="options" id="sortByStatus" autocomplete="off">Status</label>
                     </div>
                     <br>
@@ -266,7 +266,6 @@
 
 
 <!-- Team page -->
-
 <template name="teaminfo">
     <div class="col-sm-6">
         <div class="row">
@@ -332,38 +331,43 @@
                             <div class="list-group">
                                 {{#if isAdmin}}
                                 <div class="list-group-item">
-                                    {{#autoForm collection="Channels" id="createChannelForm" type="insert"}} {{>afFormGroup name="name" placeholder="Create new Channel" label=false}} {{/autoForm}}
+                                    {{#autoForm collection="Channels" id="createChannelForm" type="insert"}} 										{{>afFormGroup name="name" placeholder="Create new Channel" label=false}} 
+                                    {{/autoForm}}
                                 </div>
                                 {{/if}} 
                                 {{#each channels}}
-                                <a id="{{_id}}" href="#" class="channelitem list-group-item">{{name}}               
+                                <a id="{{_id}}" class="channelitem list-group-item">{{name}}               
                                     <span class="glyphicon glyphicon-chevron-right pull-right"></span>
                                     {{#if isAdmin}}
-                                    <button class="delChannel btn btn-xs btn-danger pull-right"><span class="glyphicon glyphicon-remove"></span></button>
+                                    <button class="delChannel btn btn-xs btn-danger pull-right glyphicon glyphicon-remove"></button>
                                     {{/if}}
                                 </a>
                                 {{/each}}
                                 <hr>
                                 <div class="list-group-item">
-                                    {{#autoForm collection="Conversations" id="createConvForm" type="insert"}} {{>afFormGroup name="members" placeholder="Create new conversation" label=false options=convMembers}}
-                                    <button class="btn btn-success btn-xs" type="submit">Chat</button>
+                                    {{#autoForm collection="Conversations" id="createConvForm" type="insert"}} 
+                                    <div>
+                                    <span class="text-muted">Select members to chat </span>
+                                    <button class="btn btn-success btn-xs pull-right glyphicon glyphicon-comment" type="submit"></button>
+                                    </div>
+                                    	{{>afFormGroup name="members" placeholder="Create new conversation" label=false options=convMembers}}
                                     {{/autoForm}}
                                 </div>
                                 {{#each conversations}}
-                                <a id="{{_id}}" href="#" class="convitem list-group-item">
+                                <a id="{{_id}}" class="convitem list-group-item">
                                     {{#each members}}
-                                    {{#if isCurrentUser}}
-                                    {{else}}
-                                    <span class="mk-token">{{showName this}}</span>
-                                    {{/if}}
+                                    	{{#if isCurrentUser}}
+										{{else}}
+											<span class="mk-token-n">{{showName this}}</span>
+										{{/if}}
                                     {{/each}}
-                                    {{#if isInitiator}}
-                                    {{else}}
-                                    <span class="mk-token">{{showName owner}}</span>
-                                    {{/if}}
+                                    	{{#if isInitiator}}
+										{{else}}
+											<span class="mk-token-n">{{showName owner}}</span>
+										{{/if}}
                                     <span class="glyphicon glyphicon-chevron-right pull-right"></span>
                                     {{#if isInitiator}}
-                                    <button class="delConv btn btn-xs btn-danger pull-right"><span class="glyphicon glyphicon-remove"></span></button>
+                                    	<button class="delConv btn btn-xs btn-danger pull-right glyphicon glyphicon-remove"></button>
                                     {{/if}}
                                 </a>
                                 {{/each}}
@@ -372,7 +376,8 @@
                         <div class="col-sm-8">
                             <div class="panel panel-default">
                                 <div class="panel-body">
-                                    {{#if channel}} {{#with channel}}
+                                    {{#if channel}} 
+                                    {{#with channel}}
                                     <div class="row messageView" id="mview">
                                         {{#each channelMessages}} 
                                         {{#if isOwner}}
@@ -393,7 +398,9 @@
                                     </div>
                                     <br>
                                     <div>
-                                        {{#autoForm collection="Messages" id="createChannelMessageForm" type="insert"}} {{> afFormGroup name="message" label=false placeholder="Enter Message to send" class="inputMsg"}} {{/autoForm}}
+                                        {{#autoForm collection="Messages" id="createChannelMessageForm" type="insert"}} 
+                                        	{{> afFormGroup name="message" label=false placeholder="Enter Message to send" class="inputMsg"}} 
+                                        {{/autoForm}}
                                     </div>
                                     {{/with}} 
                                     {{else}} 
@@ -418,15 +425,15 @@
                                     </div>
                                     <br>
                                     <div>
-                                        {{#autoForm collection="Messages" id="createConvMessageForm" type="insert"}} 
-                                        {{> afFormGroup name="message" label=false placeholder="Enter Message to send" class="inputMsg"}} 
+                                        {{#autoForm collection="Messages" id="createConvMessageForm" type="insert"}}
+                                        	{{> afFormGroup name="message" label=false placeholder="Enter Message to send" class="inputMsg"}}
                                         {{/autoForm}}
                                     </div>
                                     {{/with}} 
                                     {{else}}
-                                    <p class="text-muted text-center">
-                                        <strong>Select a channel/conversation</strong>
-                                    </p>
+	                                    <p class="text-muted text-center">
+	                                        <strong>Select a channel/conversation</strong>
+	                                    </p>
                                     {{/if}} 
                                     {{/if}}
                                 </div>
@@ -445,13 +452,13 @@
                             <span class="glyphicon glyphicon-sort-by-attributes pull-right"></span>
                             <br>
                         </label>
-                        <label class="btn btn-primary active">
+                        <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByName" autocomplete="off" checked>Name</label>
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByDue" autocomplete="off">Due</label>
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByAssigned" autocomplete="off">Assigned to</label>
-                        <label class="btn btn-primary">
+                        <label class="btn btn-primary active">
                             <input type="radio" name="options" id="sortByStatus" autocomplete="off">Status</label>
                     </div>
                     <br>
@@ -467,7 +474,8 @@
                         <div class="panel-body">
                             {{#autoForm schema="TaskSchema" id="createTaskForm" type="method" meteormethod="createTask"}}
                             <fieldset>
-                                {{> afFormGroup name="name" placeholder="schemaLabel" label=false}} {{> afFormGroup name="assignedto" id="taskassigned" label=false options=teamMembers firstOption="Select a member to assign this task to :"}}
+                                {{> afFormGroup name="name" placeholder="schemaLabel" label=false}} 
+                                {{> afFormGroup name="assignedto" label=false options=teamMembers firstOption="Select a member to assign this task to :"}}
                                 <div class="input-group">
                                     <span class="input-group-addon" id="time-icon">
                                         <span class="glyphicon glyphicon-time"></span>
@@ -496,7 +504,7 @@
                     {{/if}}
                     <div class="list-group">
                         {{#each tasks}}
-                        <div class="list-group-item {{status}}">
+                        <div class="animated fadeInUp list-group-item {{status}}">
                             <label class="text-info">
                                 {{#if ownsTask}}
                                 <input type="checkbox" name="Mark as Complete" class="markTask" checked="{{status}}">{{else}}
@@ -522,7 +530,8 @@
                                 <div class="panel-body">
                                     {{#autoForm schema="TaskSchema" doc=this id=this._id type="method" meteormethod="updateTask"}}
                                     <fieldset>
-                                        {{> afFormGroup name="name" placeholder="schemaLabel" label=false}} {{> afFormGroup name="assignedto" class="taskassignede" label=false options=teamMembers firstOption="Select a member to assign this task to :"}}
+                                        {{> afFormGroup name="name" placeholder="schemaLabel" label=false}}                     
+                                        {{> afFormGroup name="assignedto" label=false options=teamMembers}}
                                         <div class="input-group">
                                             <span class="input-group-addon" id="time-icon">
                                                 <span class="glyphicon glyphicon-time"></span>
@@ -536,7 +545,8 @@
                                             </span>
                                             {{> afFieldInput name="tags" label=false class="tasktagse" placeholder="Tags" aria-describedby="tag-icon"}}</div>
                                         <div hidden="hidden">
-                                            {{> afFieldInput name="_id"}} {{> afFieldInput name="teamID"}}
+                                            {{> afFieldInput name="_id"}} 
+                                            {{> afFieldInput name="teamID"}}
                                         </div>
                                     </fieldset>
                                     <div>

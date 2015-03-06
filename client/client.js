@@ -101,7 +101,6 @@ Template.login.events({
 });
 
 /* Form-related functionality across the app */
-
 AutoForm.hooks({
     signupForm: {
         after: {
@@ -359,13 +358,10 @@ Template.team.helpers({
     },
     tasks: function() {
         var t_id = Session.get('currentTeam');
-        var sort_order = Session.get('sortOrder') ? Session.get('sortOrder') : "name";
+        var sort_order = Session.get('sortOrder') ? Session.get('sortOrder') : "status";
         //return Tasks.find();
-        var tasks = Teams.findOne({
-            "_id": t_id
-        }, {
-            "tasks": 1
-        }).tasks;
+        
+        var tasks = Teams.findOne({"_id": t_id}).tasks;
         return _.sortBy(tasks, function(e) {
             return e[sort_order];
         });
@@ -383,7 +379,7 @@ Template.team.helpers({
         var team = {};
         var members = _.union(this.members,this.admin);
         members.forEach(function(member, i) {
-            //var name = Meteor.users.findOne({"username": member}).profile.name;
+            var name = Meteor.users.findOne({"username": member}).profile.name;
             team[member] = name + " <" + member + ">";
         });
         return team;
@@ -453,7 +449,15 @@ Template.team.events({
         $('#newTask').slideToggle();
     },
     'click .markTask': function(e) {
-        Meteor.call('markTask', this, e.target.checked);
+	    if(e.target.checked)
+	    	$(e.target.parentNode.parentNode).removeClass("fadeInUp").addClass("flipOutX");
+	    else 
+	    	$(e.target.parentNode.parentNode).removeClass("fadeInUp").addClass("bounceIn");
+	    var temp=this;
+	    $(e.target.parentNode.parentElement).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+		    $(e.target.parentNode.parentNode).removeClass("flipOutX bounceIn").addClass("fadeInUp");
+        	Meteor.call('markTask', temp, e.target.checked);
+    	});
     },
     'click .delTask': function(e) {
         Meteor.call('delTask', this);
@@ -494,12 +498,20 @@ Template.team.events({
     	$('.inputMsg').focus();
     },
     'click .delConv': function(e) {
-    	Meteor.call('delConv', this._id, Session.get('currentTeam'));
-		Session.set('currentConv', null);
+	    $(e.target.parentNode).addClass("animated bounceOutLeft");
+	    var temp = this;
+		$(e.target.parentNode.parentElement).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+			Session.set('currentConv', null);
+	    	Meteor.call('delConv', temp._id, Session.get('currentTeam'));
+		});
     },
     'click .delChannel': function(e) {
-    	Meteor.call('delChannel', this._id, Session.get('currentTeam'));
-    	Session.set('currentChannel', null);
+	    $(e.target.parentNode).addClass("animated bounceOutLeft");
+	    var temp = this;
+	    $(e.target.parentNode.parentElement).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+		    Session.set('currentChannel', null);
+		   	Meteor.call('delChannel', temp._id, Session.get('currentTeam'));
+   		});
    	}
 });
 
@@ -548,4 +560,3 @@ Template.teaminfo.rendered = function() {
         }
     }).tokenfield();
 };
-
