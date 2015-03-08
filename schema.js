@@ -29,6 +29,19 @@ UserLoginSchema = new SimpleSchema({
     }
 });
 
+//Change password
+PasswordChangeSchema = new SimpleSchema({
+    oldpassword: {
+        type: String,
+        label: "Old Password",
+    },
+    newpassword: {
+        type: String,
+        label: "New Password",
+        min: 3
+    }
+});
+
 //Tasks
 TaskSchema = new SimpleSchema({
     name: {
@@ -94,6 +107,9 @@ MessageSchema = new SimpleSchema({
         label: "timestamp"
     }
 });
+MessageSchema.messages ({
+    "required": " ",
+});
 Messages.attachSchema(MessageSchema);
 
 //Channels
@@ -132,6 +148,9 @@ ConversationSchema = new SimpleSchema({
     }
 });
 Conversations.attachSchema(ConversationSchema);
+ConversationSchema.messages ({
+    "required members": "Please select atleast one person to chat with",
+});
 
 //Teams
 Teams = new Mongo.Collection("teams");
@@ -146,7 +165,6 @@ TeamSchema = new SimpleSchema({
         regEx: SimpleSchema.RegEx.Email,
         label: "Team Members",
         optional: true,
-        unique: true
     },
     admin: {
         type: String,
@@ -176,13 +194,3 @@ TeamSchema.messages ({
     //"required members": "Team must have a minimum of 1 member"
 });
 Teams.attachSchema(TeamSchema);
-
-TeamMembersSchema = new SimpleSchema ({
-    members: {
-        type: [String],
-        regEx: SimpleSchema.RegEx.Email,
-        label: "Team Members",
-        optional: true,
-        unique: true
-    }
-});

@@ -65,7 +65,9 @@ Template.account.helpers({
 });
 
 Template.account.events({
-
+	'click #changepassb': function(e, t) {
+    	$('#changePassPanel').slideToggle();
+    }
 });
 
 //Signup page
@@ -136,6 +138,30 @@ AutoForm.hooks({
             }
         }
     },
+    changePasswordForm: {
+    		onSubmit: function(doc) {
+    			var self = this;
+    			Accounts.changePassword(doc.oldpassword, doc.newpassword, function(error) {
+    				if(error) {
+	    				animate('#changePassPanel','shake');
+    					self.done(error);
+    				} 
+    				else {
+	    				$('#error').hide().html("");
+	    				$('#success').show().html("Password Changed successfully");
+	    				self.done();
+    				}
+    			});
+    			return false;
+    		},
+    		onError: function(operation, error, template) {
+    			if (operation == "submit") {
+	    			$('#success').hide().html("");
+    				var message = "There was an error changing the password: <strong>" + error.reason + "</strong>";
+    				$('#error').show().html(message);
+    			}
+    		}
+    },
     createTeamForm: {
         before: {
             "createTeam": function(doc, template) {
@@ -152,12 +178,15 @@ AutoForm.hooks({
             "createTask": function(doc, template) {
                 doc._id = new Mongo.ObjectID().toHexString();
                 doc.teamID = Session.get('currentTeam');
+                doc.status = false;
                 return doc;
             }
         },
         after: {
-            "createTask": function(doc, template) {
+            "createTask": function(error,result, template) {
                 this.template.$('#tasktags').tokenfield('setTokens', []);
+                if(!error)
+                	$('#newTask').slideUp();
             }
         }
     },
@@ -175,21 +204,28 @@ AutoForm.hooks({
         },
         before: {
             update: function(docId, modifier, template) {
-                var members = modifier.$set.members;
-                members.forEach(function(member) {
-                    var mem = Meteor.users.findOne({
-                        "username": member
-                    });
-                    if (!mem)
-                        modifier.$set.members = _.without(members, member);
-                });
-                return modifier;
+	            if(modifier.$set) {
+	                var members = modifier.$set.members;
+	                var admin = Teams.findOne({"_id":docId}).admin;
+	                members.forEach(function(member) {
+	                    var mem = Meteor.users.findOne({"username": member});
+	                    if (!mem)
+	                        modifier.$set.members = _.without(members, member);
+	                    if (member == admin) 
+	                    	modifier.$set.members = _.without(members, member);	                    
+	                });
+	                modifier.$set.members = _.unique(modifier.$set.members);
+	                return modifier;
+            	} 
+            	else return modifier;
             }
         },
         after: {
             update: function(error, result, template) {
-                Meteor.call('updateInfoForMembers', Session.get('currentMembers'), Session.get('revisedMembers'), Session.get('currentTeam'));
-                this.resetForm();
+	            if(!error) {
+                	Meteor.call('updateInfoForMembers', Session.get('currentMembers'), Session.get('revisedMembers'), Session.get('currentTeam'));
+                	this.resetForm();
+            	}
                 this.template.$('#members').tokenfield();
             }
         }
@@ -201,8 +237,8 @@ AutoForm.hooks({
                 Session.set('currentChannel',result);
                 $('.channelitem').removeClass("active");
                 $('.convitem').removeClass("active");
-                $('#'+result).addClass("active");
                 $('.inputMsg').focus();
+                $('#'+result).addClass("active");
             }
         }
     },
@@ -230,8 +266,8 @@ AutoForm.hooks({
 			    	Session.set('currentConv',isPresent._id);
 			    	$('.channelitem').removeClass("active");
 			    	$('.convitem').removeClass("active");
-			    	$('#'+isPresent._id).addClass("active");
 			    	$('.inputMsg').focus();
+			    	$('#'+isPresent._id).addClass("active");
 			    	return false;
 				}
 			    else return doc;
@@ -266,12 +302,13 @@ AutoForm.hooks({
 
 AutoForm.addHooks(null, {
     after: {
-        "updateTask": function(doc, template) {
+        "updateTask": function(error, result, template) {
             this.template.$('.tasktagse').tokenfield({
                 createTokensOnBlur: true
             });
-            this.template.$('.taskduedatee').datetimepicker();
-            //this.template.$('.editTaskPanel').slideToggle();
+            this.template.$('.taskduedatee').datetimepicker({
+	            minDate : moment()
+            });
         }
     }
 });
@@ -337,9 +374,6 @@ Template.teams.events({
     'change #sortByDue': function(e) {
         Session.set('sortOrder', 'due');
     },
-    'change #sortByAssigned': function(e) {
-        Session.set('sortOrder', 'assignedto');
-    },
     'change #sortByStatus': function(e) {
         Session.set('sortOrder', 'status');
     }
@@ -357,11 +391,9 @@ Template.team.helpers({
         return this.name;
     },
     tasks: function() {
-        var t_id = Session.get('currentTeam');
         var sort_order = Session.get('sortOrder') ? Session.get('sortOrder') : "status";
-        //return Tasks.find();
-        
-        var tasks = Teams.findOne({"_id": t_id}).tasks;
+        var tasks = Teams.findOne({"_id": this._id}).tasks;
+        tasks = Session.get('archived') ? tasks : _.where(tasks, {status:false});
         return _.sortBy(tasks, function(e) {
             return e[sort_order];
         });
@@ -448,6 +480,11 @@ Template.team.events({
     'click #createtaskb': function(e, t) {
         $('#newTask').slideToggle();
     },
+    'click #showArchived': function(e, t) {
+    	if(Session.get('archived')==true)
+    		Session.set('archived',false);
+    	else Session.set('archived',true);
+    },
     'click .markTask': function(e) {
 	    if(e.target.checked)
 	    	$(e.target.parentNode.parentNode).removeClass("fadeInUp").addClass("flipOutX");
@@ -466,7 +503,9 @@ Template.team.events({
         $('.tasktagse').tokenfield({
             createTokensOnBlur: true
         });
-        $('.taskduedatee').datetimepicker();
+        $('.taskduedatee').datetimepicker({
+			minDate : moment()
+		});
         $('#' + this._id).slideToggle();
     },
     'change #sortByName': function(e) {
@@ -486,16 +525,16 @@ Template.team.events({
         Session.set('currentChannel', this._id);
         $('.channelitem').removeClass("active");
         $('.convitem').removeClass("active");
-        $(e.target).addClass("active");
         $('.inputMsg').focus();
+        $(e.target).addClass("active");
     },
     'click .convitem': function(e) {
 	    Session.set('currentChannel', null);
     	Session.set('currentConv', this._id);
     	$('.channelitem').removeClass("active");
     	$('.convitem').removeClass("active");
-    	$(e.target).addClass("active");
     	$('.inputMsg').focus();
+    	$(e.target).addClass("active");
     },
     'click .delConv': function(e) {
 	    $(e.target.parentNode).addClass("animated bounceOutLeft");
@@ -516,37 +555,33 @@ Template.team.events({
 });
 
 Template.team.rendered = function() {
+	console.log("rendered");
     $('#tasktags').tokenfield({
         createTokensOnBlur: true
     });
-    $('#taskduedate').datetimepicker();
+    $('#taskduedate').datetimepicker({
+		minDate : moment()
+	});
     $('.tasktagse').tokenfield({
         createTokensOnBlur: true
     });
-    $('.taskduedatee').datetimepicker();
+    $('.taskduedatee').datetimepicker({
+		minDate : moment()
+	});
     $('.taskassignedto').tooltip();
 };
 
 //Team info page
 Template.teaminfo.helpers({
-    admin: function() {
-        var user = Meteor.users.findOne({
-            "username": this.admin
-        });
-        return user.profile.name;
-    }
+
 });
 
 Template.teaminfo.events({
-    'click #back': function(e, t) {
-        history.go(-1);
+    'click #editb': function(e, t) {
+        $('#editMembersPanel').slideToggle();
     },
-    'click #addb': function(e, t) {
-        $('#addcontainer').slideToggle();
-    },
-    'click #deleteb': function(e, t) {
-        t_id = Session.get('currentTeam');
-        Meteor.call('deleteTeam', t_id);
+    'click #delb': function(e, t) {
+        Meteor.call('delTeam', this._id);
         Router.go('/teams');
     }
 });

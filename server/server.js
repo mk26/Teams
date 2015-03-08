@@ -1,10 +1,13 @@
-//Server side methods
+/* Server side methods */
+
+//Run on server startup
 Meteor.startup(function () {
 	
 });
 
 Meteor.methods({
 	signup: function(doc) {
+		//Validate again for safety, then insert
 		check(doc, UserRegSchema);
 		Accounts.createUser({
 			username: doc.email,
@@ -18,6 +21,7 @@ Meteor.methods({
 		});
 	},
 	createTeam: function(doc) {
+		//Validate again for safety, then insert
 		check(doc, TeamSchema);
 		var mem_usernames=[];
 		if(doc.members) {
@@ -46,6 +50,7 @@ Meteor.methods({
 		return id;
 	},
 	updateInfoForMembers: function(current,revised,t_id) {
+		//Identify added and removed users, then update user's profile about team membership status
 		var change = _.union(current,revised);
 		var teamMembers = Teams.findOne({"_id":t_id}).members;
 		if(change) {
@@ -62,21 +67,31 @@ Meteor.methods({
 			});
 		}
 	},
-	deleteTeam: function(t_id) {
+	delTeam: function(t_id) {
 		var team = Teams.findOne({"_id":t_id});
+		//Delete team admin & members, if any
 		Meteor.users.update({"username":team.admin},{$pull: {"profile.adminOf" : t_id}});
-		team.members.forEach(function(member) {
-			Meteor.users.update({"username":member},{$pull: {"profile.memberOf" : t_id}});
-		});
-		team.conversations.forEach(function(conv_id){
-			Meteor.call('delConv',conv_id,t_id);
-		});
-		team.channels.forEach(function(channel_id){
-			Meteor.call('delChannel',channel_id,t_id);
-		});
+		if(team.members) {
+			team.members.forEach(function(member) {
+				Meteor.users.update({"username":member},{$pull: {"profile.memberOf" : t_id}});
+			});
+		}
+		//Delete channels and conversations associated with the team, including the messages contained
+		if(team.channels) {
+			team.channels.forEach(function(channel_id){
+				Meteor.call('delChannel',channel_id,t_id);
+			});
+		}
+		if(team.conversations) {
+			team.conversations.forEach(function(conv_id){
+				Meteor.call('delConv',conv_id,t_id);
+			});
+		}
+		//Finally, Delete all tasks and the team itself
 		Teams.remove({"_id":t_id});
 	},
 	createTask: function(doc) {
+		//Validate again for safety, then insert
 		check(doc,TaskSchema);
 		Teams.update({"_id":doc.teamID},{$push : {
 			tasks: {
@@ -111,15 +126,20 @@ Meteor.methods({
 		});
 	},
 	delConv: function(conv_id,t_id) {
+		//Find messages in the conversation
 		var messages = Conversations.findOne({"_id":conv_id}).messages;
+		//Remove conversations from Team
 		Teams.update({"_id":t_id},{$pull: {conversations : conv_id}});
-		Messages.remove({"_id": {$in : messages}});
+		//Remove all messages from conversations
+		if(messages) Messages.remove({"_id": {$in : messages}});
+		//Remove the conversation itself
 		Conversations.remove({"_id":conv_id});
 	},
 	delChannel: function(channel_id,t_id) {
+		//Similar to above function, but for channels
 		var messages = Channels.findOne({"_id":channel_id}).messages;
 		Teams.update({"_id":t_id},{$pull: {channels : channel_id}});
-		Messages.remove({"_id": {$in : messages}});
+		if(messages) Messages.remove({"_id": {$in : messages}});
 		Channels.remove({"_id":channel_id});
 	}
 });

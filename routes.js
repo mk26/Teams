@@ -57,6 +57,7 @@ Router.route('/t/:_id', function () {
 
 Router.route('/t/:_id/info', function () {
    var teamID = this.params._id;
+   Session.set('currentTeam',teamID);
    var team = Teams.findOne({"_id":this.params._id})
    if($.inArray(Meteor.user().username,team.members)!=-1 || Meteor.user().username == team.admin) {
        this.render('teaminfo',{
