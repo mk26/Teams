@@ -152,6 +152,18 @@ ConversationSchema.messages ({
     "required members": "Please select atleast one person to chat with",
 });
 
+//Files
+Files = new FS.Collection("files", {
+  stores: [new FS.Store.GridFS("filesStore")]
+});
+
+Files.allow({
+  download: function () {
+    return true;
+  },
+  fetch: null
+});
+
 //Teams
 Teams = new Mongo.Collection("teams");
 TeamSchema = new SimpleSchema({
@@ -187,6 +199,17 @@ TeamSchema = new SimpleSchema({
         regEx: SimpleSchema.RegEx.Id,
         label: "Conversation IDs",
         optional: true
+    },
+    files: {
+        type: [String],
+        label: "File IDs",
+        optional: true,
+        autoform: {
+          afFieldInput: {
+            type: "cfs-files",
+            collection: "files"
+          }
+        }
     }
 }); 
 TeamSchema.messages ({

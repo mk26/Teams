@@ -108,8 +108,9 @@ AutoForm.hooks({
         after: {
             "signup": function(error, result, template) {
                 if (error) {
+	                animate('#signupPanel','wobble');
                     var message = "There was an error signing up: <strong>" + error.reason + "</strong>";
-                    template.$('#error').show().html(message);
+                    this.template.$('#error').show().html(message);
                 } else {
                     alert("Account created successfully");
                     Router.go('/login');
@@ -120,7 +121,7 @@ AutoForm.hooks({
     loginForm: {
         onSubmit: function(doc) {
             var self = this;
-            Meteor.loginWithPassword(doc.email, doc.password, function(error) {
+            Meteor.loginWithPassword(doc.email.toLowerCase(), doc.password, function(error) {
                 if (Meteor.user()) {
                     Router.next();
                     self.done();
@@ -134,7 +135,7 @@ AutoForm.hooks({
         onError: function(operation, error, template) {
             if (operation == "submit") {
                 var message = "There was an error logging in: <strong>" + error.reason + "</strong>";
-                template.$('#error').show().html(message);
+                this.template.$('#error').show().html(message);
             }
         }
     },
@@ -206,7 +207,7 @@ AutoForm.hooks({
             update: function(docId, modifier, template) {
 	            if(modifier.$set) {
 	                var members = modifier.$set.members;
-	                var admin = Teams.findOne({"_id":docId}).admin;
+	                var admin = Teams.findOne({"_id":this.docId}).admin;
 	                members.forEach(function(member) {
 	                    var mem = Meteor.users.findOne({"username": member});
 	                    if (!mem)
@@ -404,7 +405,7 @@ Template.team.helpers({
             return true;
         else return false;
     },
-    TaskSchema: function() {
+    taskSchema: function() {
         return TaskSchema;
     },
     teamMembers: function() {
@@ -555,7 +556,6 @@ Template.team.events({
 });
 
 Template.team.rendered = function() {
-	console.log("rendered");
     $('#tasktags').tokenfield({
         createTokensOnBlur: true
     });
@@ -569,7 +569,13 @@ Template.team.rendered = function() {
 		minDate : moment()
 	});
     $('.taskassignedto').tooltip();
+    
+    this.autorun(function() {
+    	$('[data-toggle="tooltip"]').tooltip();
+    });
 };
+
+
 
 //Team info page
 Template.teaminfo.helpers({

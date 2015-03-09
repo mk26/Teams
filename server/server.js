@@ -10,7 +10,7 @@ Meteor.methods({
 		//Validate again for safety, then insert
 		check(doc, UserRegSchema);
 		Accounts.createUser({
-			username: doc.email,
+			username: doc.email.toLowerCase(),
 			email: doc.email,
 			password: doc.password,
 			profile: {

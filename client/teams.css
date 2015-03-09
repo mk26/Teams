@@ -8,7 +8,7 @@ html {
 
 body {
 	font-family: Karla, Helvetica Neue, sans-serif !important;
-	padding: 30px;
+	padding: 20px;
 	cursor: default;
 	-webkit-font-smoothing: subpixel-antialiased;
 }
@@ -25,6 +25,7 @@ button:hover, a:hover, label:hover {
 	text-decoration: none;
 	opacity: 0.8;
 	-webkit-transition: all 0.3s ease;
+	transition: all 0.3s ease;
 }
 #teamslink:hover {
 	opacity: 1.0;
@@ -32,6 +33,7 @@ button:hover, a:hover, label:hover {
 #teamslink:active {
 	opacity: 1.0;
 	-webkit-filter: brightness(85%);
+	filter: brightness(85%);
 }
 #loginPanel {
 	-webkit-animation-duration: 0.7s;
@@ -107,7 +109,7 @@ input[type="checkbox"] + strong {
 
 .messageView {
 	position: relative;
-	padding: 15px 0px 10px 0px;
+	padding: 20px 0px 10px 0px;
 	background-color: rgba(250,250,250,1);
     height: 400px;
     margin-top: -15px;
@@ -116,6 +118,7 @@ input[type="checkbox"] + strong {
 	overflow-y: scroll;
 	overflow-x: hidden;
 	z-index: 1;
+	-webkit-user-select: text;
 }
 
 .memberBar {
@@ -134,13 +137,13 @@ input[type="checkbox"] + strong {
 }
 
 .inputMsg {
-	max-width: 85%;
-	overflow: scroll;
+	margin-left: 2%;
+	max-width: 82%;
 	float: left;
 }
 
-.channelmsgb {
-	margin-left: 5px;
+.msgb {
+	margin-left: 1%;
 	float: left;
 }
 
@@ -219,5 +222,5 @@ input[type="checkbox"] + strong {
 }
 
 .timestamp {
-	color: rgba(190, 190, 190, 1);
+	color: rgba(180, 180, 180, 0.9);
 }

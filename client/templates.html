@@ -90,7 +90,7 @@
 </template>
 
 <template name="signup">
-    <div class="panel panel-default col-sm-4 col-sm-offset-4">
+    <div class="panel panel-default col-sm-4 col-sm-offset-4" id="signupPanel">
         <div class="panel-body">
             <div class="row text-center">
                 <img class="img-responsive center-block" src="/images/teams.png" alt="Teams Logo" width="150" height="150">
@@ -349,26 +349,22 @@
 
 <template name="team">
     <div class="container-fluid row">
-        <h3 class="text-primary">{{name}}&nbsp;&nbsp;
-            <button id="infob" class="btn btn-xs btn-primary" data-toggle="tooltip" data-placement="right" title="Team info">
-                <span class="glyphicon glyphicon-info-sign"></span>
+        <h3 class="text-primary">{{name}}&nbsp;
+            <button id="infob" class="btn btn-xs btn-primary" data-toggle="tooltip" data-placement="right" title="Team info"><span class="glyphicon glyphicon-info-sign"></span>
             </button>
         </h3>
     </div>
-    <br>
     <div class="row">
-        <div class="col-sm-8">
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Messages</h3>
-                </div>
+        <div class="col-md-8">
+            <div class="panel panel-default">
+
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-sm-4">
                             <div class="list-group">
                                 {{#if isAdmin}}
                                 <div class="list-group-item">
-                                    {{#autoForm collection="Channels" id="createChannelForm" type="insert"}} 										{{>afFormGroup name="name" placeholder="Create new Channel" label=false id="createChannelInput"}} 
+                                    {{#autoForm collection="Channels" id="createChannelForm" type="insert"}} 										{{>afFormGroup name="name" placeholder="+ New Channel" label=false id="createChannelInput"}} 
                                     {{/autoForm}}
                                 </div>
                                 {{/if}} 
@@ -376,7 +372,7 @@
                                 <a id="{{_id}}" class="channelitem list-group-item">{{name}}               
                                     <span class="glyphicon glyphicon-chevron-right pull-right"></span>
                                     {{#if isAdmin}}
-                                    <button class="delChannel btn btn-xs btn-danger pull-right glyphicon glyphicon-remove"></button>
+                                    <button class="delChannel btn btn-xs btn-danger pull-right glyphicon glyphicon-remove" data-toggle="tooltip" data-placement="left" title="Delete"></button>
                                     {{/if}}
                                 </a>
                                 {{/each}}
@@ -407,7 +403,7 @@
 										{{/if}}
                                     <span class="glyphicon glyphicon-chevron-right pull-right"></span>
                                     {{#if isInitiator}}
-                                    	<button class="delConv btn btn-xs btn-danger pull-right glyphicon glyphicon-remove"></button>
+                                    	<button class="delConv btn btn-xs btn-danger pull-right glyphicon glyphicon-remove" data-toggle="tooltip" data-placement="left" title="Delete"></button>
                                     {{/if}}
                                 </a>
                                 {{/each}}
@@ -440,11 +436,10 @@
                                         {{/if}} 
                                         {{/each}}
                                     </div>
-                                    <br>
-                                    <div>
+                                    <div class="row">
                                         {{#autoForm collection="Messages" id="createChannelMessageForm" type="insert"}} 
                                         	{{> afFormGroup name="message" label=false placeholder="Enter Message to send" class="inputMsg"}} 
-                                        	<button class="channelmsgb btn btn-primary" type="submit">Send</button>
+                                        	<button class="msgb btn btn-primary" type="submit">Send</button>
                                         {{/autoForm}}
                                     </div>
                                     {{/with}} 
@@ -484,11 +479,10 @@
                                         {{/if}} 
                                         {{/each}}
                                     </div>
-                                    <br>
-                                    <div>
+                                    <div class="row">
                                         {{#autoForm collection="Messages" id="createConvMessageForm" type="insert"}}
                                         	{{> afFormGroup name="message" label=false placeholder="Enter Message to send" class="inputMsg"}}
-                                        	<button class="channelmsgb btn btn-primary" type="submit">Send</button>
+                                        	<button class="msgb btn btn-primary" type="submit">Send</button>
                                         {{/autoForm}}
                                     </div>
                                     {{/with}} 
@@ -505,11 +499,16 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-4">
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <div class="panel-title pull-left">Tasks</div>
-                    <div class="btn-group btn-group-xs pull-right" data-toggle="buttons">
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="row text-center">
+                    <br>
+                    {{#if isAdmin}}
+                    <button id="createtaskb" class="btn btn-success btn-xs" data-toggle="tooltip" title="Create New Task">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>&nbsp;
+                    {{/if}}
+                    <div class="btn-group btn-group-xs" data-toggle="buttons">
                         <label class="btn btn-default" disabled>
                             <span class="glyphicon glyphicon-sort-by-attributes pull-right sort-icon"></span>
                             <br>
@@ -527,19 +526,9 @@
                 </div>
                 <div class="panel-body">
                     {{#if isAdmin}}
-                    <button id="createtaskb" class="btn btn-success btn-sm">
-                        <span class="glyphicon glyphicon-plus"></span>&nbsp;Create New Task
-                    </button>
-                    {{/if}}
-                    <button id="showArchived" class="btn btn-primary btn-xs pull-right" data-toggle="button">
-                        <span class="glyphicon glyphicon-ok-sign"></span>&nbsp;Show Archived
-                    </button>
-                    <br>
-                    <br>
-                    {{#if isAdmin}}
                     <div class="panel panel-default" id="newTask" hidden>
                         <div class="panel-body">
-                            {{#autoForm schema="TaskSchema" id="createTaskForm" type="method" meteormethod="createTask"}}
+                            {{#autoForm schema=taskSchema id="createTaskForm" type="method" meteormethod="createTask"}}
                             <fieldset>
                                 {{> afFormGroup name="name" placeholder="schemaLabel" label=false}} 
                                 {{> afFormGroup name="assignedto" label=false options=teamMembers firstOption="Select a member to assign this task to :"}}
@@ -583,8 +572,9 @@
                             <p class="text-muted">{{due}}</p>
                             {{#each tags}}
                             <span class="mk-token">{{this}}</span>
-                            {{/each}} {{#if isAdmin}}
-                            <button class="delTask btn btn-danger btn-xs pull-right" title="Delete Task">
+                            {{/each}} 
+                            {{#if isAdmin}}
+                            <button class="delTask btn btn-danger btn-xs pull-right" data-toggle="tooltip" title="Delete">
                                 <span class="glyphicon glyphicon-trash"></span>
                             </button>
                             <span class="pull-right">&nbsp;</span>
@@ -628,6 +618,12 @@
                             {{/if}}
                         </div>
                         {{/each}}
+                        <br>
+                        <div class="row text-center">
+                        <button id="showArchived" class="btn btn-link btn-xs" data-toggle="button">
+                            <span class="glyphicon glyphicon-ok-sign"></span>&nbsp;Show Archived
+                        </button>
+                    </div>
                     </div>
                 </div>
             </div>
