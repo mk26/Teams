@@ -11,9 +11,10 @@
                     <img class="img-circle" src="/images/teams.png" width="36">
                 </a>&nbsp;
                 <a class="btn btn-default" href="/account" title="Manage account">
-                    <span class="glyphicon glyphicon-user"></span>&nbsp;{{currentName}}</a>&nbsp;
+                    <span class="glyphicon glyphicon-user"></span>&nbsp;{{currentName}}
+                </a>&nbsp;
                 <button id="logoutb" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Logout">
-                    <span class="glyphicon glyphicon-log-out"></span>&nbsp;
+                    <span class="glyphicon glyphicon-log-out"></span>
                 </button>
             </div>
             {{/if}}
@@ -26,7 +27,7 @@
 
 <!-- Errors -->
 <template name="notfound">
-    <div class="panel panel-danger col-lg-6 col-lg-offset-3 teams-error" role="alert">
+    <div class="panel panel-danger col-lg-6 col-lg-offset-3 mk-panel-error" role="alert">
         <div class="panel-body text-center">
             <h2>
                 <span class="label label-danger">404</span>
@@ -37,7 +38,7 @@
 </template>
 
 <template name="accessdenied">
-    <div class="panel panel-danger col-lg-6 col-lg-offset-3 teams-error" role="alert">
+    <div class="panel panel-danger col-lg-6 col-lg-offset-3 mk-panel-error" role="alert">
         <div class="panel-body text-center">
             <h2>
                 <span class="glyphicon glyphicon-minus-sign text-danger"></span>
@@ -49,7 +50,6 @@
 
 <!-- User management -->
 <template name="account">
-    <br>
     <div class="col-sm-6 col-sm-offset-3">
         <div class="row">
             <div class="panel panel-info">
@@ -77,9 +77,9 @@
                             </button>
                             <div id="changePassPanel" hidden="true">
                                 <br>
-                            {{> quickForm schema="PasswordChangeSchema" id="changePasswordForm"}}
-                            <div id="error" class="alert alert-danger" hidden="true"></div>
-                            <div id="success" class="alert alert-success" hidden="true"></div>
+                                {{> quickForm schema="PasswordChangeSchema" id="changePasswordForm"}}
+                                <div id="error" class="alert alert-danger" hidden="true"></div>
+                                <div id="success" class="alert alert-success" hidden="true"></div>
                             </div>
                         </span>
                     </div>
@@ -248,11 +248,24 @@
                     <br>
                 </div>
                 <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control taskSearch" placeholder="Search">
+                        </div>
+                        <div class="col-sm-5">
+                            <select class="searchType" placeholder="Scope">
+                              <option value="name">Name</option> 
+                              <option value="tags">Tags</option>
+                              <option value="assignedto">Assigned to</option>
+                            </select>
+                        </div>
+                    </div>
+                    <br>
                     <div class="list-group">
                         {{#each tasks}}
                         <div class="list-group-item {{status}}">
                             <label class="text-info">
-                                <input type="checkbox" name="Mark as Complete" class="markTask" checked="{{status}}">&nbsp;&nbsp;
+                                <input type="checkbox" name="Mark as Complete" class="markTask" checked="{{status}}">&nbsp;
                                 <strong>{{name}}</strong>
                             </label>
                             <a href="/t/{{teamID}}" title="{{assignedto}}" class="taskassignedto pull-right text-info" data-toggle="tooltip" data-placement="bottom">{{teamName}}</a>
@@ -348,12 +361,10 @@
 </template>
 
 <template name="team">
-    <div class="container-fluid row">
-        <h3 class="text-primary">{{name}}&nbsp;
-            <button id="infob" class="btn btn-xs btn-primary" data-toggle="tooltip" data-placement="right" title="Team info"><span class="glyphicon glyphicon-info-sign"></span>
-            </button>
-        </h3>
-    </div>
+    <h3 class="text-primary">{{name}}&nbsp;
+        <button id="infob" class="btn btn-xs btn-primary" data-toggle="tooltip" data-placement="top" title="Team info"><span class="glyphicon glyphicon-info-sign"></span></button>
+        <button id="filesb" class="btn btn-xs btn-primary" data-toggle="tooltip" data-placement="top" title="Shared files"><span class="glyphicon glyphicon-file"></span></button>
+    </h3>
     <div class="row">
         <div class="col-md-8">
             <div class="panel panel-default">
@@ -364,7 +375,7 @@
                             <div class="list-group">
                                 {{#if isAdmin}}
                                 <div class="list-group-item">
-                                    {{#autoForm collection="Channels" id="createChannelForm" type="insert"}} 										{{>afFormGroup name="name" placeholder="+ New Channel" label=false id="createChannelInput"}} 
+                                    {{#autoForm collection="Channels" id="createChannelForm" type="insert"}} 										{{>afFormGroup name="name" placeholder="+ New Channel" label=false id="createChannel"}} 
                                     {{/autoForm}}
                                 </div>
                                 {{/if}} 
@@ -378,28 +389,26 @@
                                 {{/each}}
                                 <hr>
                                 <div class="list-group-item">
+                                    <div class="row" id="createConv">
                                     {{#autoForm collection="Conversations" id="createConvForm" type="insert"}} 
-                                    <div>
-                                    <span class="text-muted">Select members to chat </span>
-                                    <button class="btn btn-success btn-xs pull-right glyphicon glyphicon-comment" type="submit"></button>
-                                </div>
-                                    <div class="row">
-                                    	{{>afFormGroup name="members" placeholder="Create new conversation" label=false options=convMembers id="convMemList"}}
-                                    	</div>
+                                    <div id="createConvMemList">
+                                    {{>afFormGroup name="members" label=false type="selectize" multiple=true options=convMembers firstOption="Select members to chat with"}}
+                                    </div>
+                                    <button class="btn btn-success btn-sm glyphicon glyphicon-comment" type="submit" data-toggle="tooltip" title="Chat" id="chatb"></button>
                                     {{/autoForm}}
-                                    
+                                </div>
                                 </div>
                                 {{#each conversations}}
                                 <a id="{{_id}}" class="convitem list-group-item">
                                     {{#each members}}
                                     	{{#if isCurrentUser}}
 										{{else}}
-											<span class="mk-token-n">{{showName this}}</span>
+											<span class="mk-token-user">{{showName this}}</span>
 										{{/if}}
                                     {{/each}}
                                     	{{#if isInitiator}}
 										{{else}}
-											<span class="mk-token-n">{{showName owner}}</span>
+											<span class="mk-token-user">{{showName owner}}</span>
 										{{/if}}
                                     <span class="glyphicon glyphicon-chevron-right pull-right"></span>
                                     {{#if isInitiator}}
@@ -414,14 +423,15 @@
                                 <div class="panel-body">
                                     {{#if channel}} 
                                     {{#with channel}}
-                                    <div class="row messageView">
+                                    <div class="row messageView" id="channelMsgView">
+                                        <button class="loadMoreMsgs center-block mk-btn btn-xs" style="margin-bottom:5px">Load More</button>
                                         {{#each channelMessages}} 
-                                        {{#if isOwner}}
+                                        {{#if isSender}}
                                         <div class="bubblewrap">
                                         <div class="bubble-right animated bounceInRight">{{message}}
                                         </div>
                                         <div class="bubble-user-right animated bounceInRight" title="{{from}}">
-                                            <span class="timestamp">{{formatTime timestamp}}</span>
+                                            <span title="{{formatTimeAbsolute timestamp}}" class="timestamp">{{formatTimeRelative timestamp}}</span>
                                         </div>
                                         </div>
                                         {{else}}
@@ -430,7 +440,7 @@
                                         </div>
                                         <div class="bubble-user-left animated bounceInLeft" title="{{from}}">
                                             <strong>{{showName from}}</strong>
-                                            <span class="timestamp">&lt;{{formatTime timestamp}}&gt;</span>
+                                            <span title="{{formatTimeAbsolute timestamp}}" class="timestamp">&lt;{{formatTimeRelative timestamp}}&gt;</span>
                                         </div>
                                         </div>
                                         {{/if}} 
@@ -449,22 +459,23 @@
                                         {{#each members}}
                                         {{#if isCurrentUser}}
                                         {{else}}
-                                            <span title="{{this}}" class="mk-token-n">{{showName this}}</span>
+                                            <span title="{{this}}" class="mk-token-user">{{showName this}}</span>
                                         {{/if}}
                                     {{/each}}
                                         {{#if isInitiator}}
                                         {{else}}
-                                            <span title="{{owner}}" class="mk-token-n">{{showName owner}}</span>
+                                            <span title="{{owner}}" class="mk-token-user">{{showName owner}}</span>
                                         {{/if}}
                                     </div>
-                                    <div class="row messageView">
+                                    <div class="row messageView" id="convMsgView">
+                                        <button class="loadMoreMsgs center-block mk-btn btn-xs" style="margin-bottom:5px">Load More</button>
                                         {{#each convMessages}} 
-                                        {{#if isOwner}}
+                                        {{#if isSender}}
                                         <div class="bubblewrap">
                                         <div class="bubble-right animated bounceInRight">{{message}}
                                         </div>
                                         <div class="bubble-user-right animated bounceInRight" title="{{from}}">
-                                            <span class="timestamp">{{formatTime timestamp}}</span>
+                                            <span title="{{formatTimeAbsolute timestamp}}" class="timestamp">{{formatTimeRelative timestamp}}</span>
                                         </div>
                                         </div>
                                         {{else}}
@@ -473,7 +484,7 @@
                                         </div>
                                         <div class="bubble-user-left animated bounceInLeft" title="{{from}}">
                                             <strong>{{showName from}}</strong>
-                                            <span class="timestamp">&lt;{{formatTime timestamp}}&gt;</span>
+                                            <span title="{{formatTimeAbsolute timestamp}}" class="timestamp">&lt;{{formatTimeRelative timestamp}}&gt;</span>
                                         </div>
                                         </div>
                                         {{/if}} 
@@ -504,9 +515,7 @@
                 <div class="row text-center">
                     <br>
                     {{#if isAdmin}}
-                    <button id="createtaskb" class="btn btn-success btn-xs" data-toggle="tooltip" title="Create New Task">
-                        <span class="glyphicon glyphicon-plus"></span>
-                    </button>&nbsp;
+                    <button id="createtaskb" class="btn btn-success btn-xs" data-toggle="tooltip" title="Create New Task"><span class="glyphicon glyphicon-plus"></span></button>&nbsp;
                     {{/if}}
                     <div class="btn-group btn-group-xs" data-toggle="buttons">
                         <label class="btn btn-default" disabled>
@@ -528,10 +537,9 @@
                     {{#if isAdmin}}
                     <div class="panel panel-default" id="newTask" hidden>
                         <div class="panel-body">
-                            {{#autoForm schema=taskSchema id="createTaskForm" type="method" meteormethod="createTask"}}
-                            <fieldset>
+                            {{#autoForm schema="TaskSchema" id="createTaskForm" type="method" meteormethod="createTask"}}
                                 {{> afFormGroup name="name" placeholder="schemaLabel" label=false}} 
-                                {{> afFormGroup name="assignedto" label=false options=teamMembers firstOption="Select a member to assign this task to :"}}
+                                {{> afFormGroup name="assignedto" type="selectize" label=false options=teamMembers firstOption="Select a member to assign this task to :" class="assignedto"}}
                                 <div class="input-group">
                                     <span class="input-group-addon" id="time-icon">
                                         <span class="glyphicon glyphicon-time"></span>
@@ -545,7 +553,6 @@
                                         <span class="glyphicon glyphicon-tag"></span>
                                     </span>
                                     {{> afFieldInput name="tags" label=false id="tasktags" placeholder="Tags" aria-describedby="tag-icon"}}</div>
-                            </fieldset>
                             <div>
                                 <br>
                                 <button type="submit" class="btn btn-sm btn-primary">
@@ -558,13 +565,13 @@
                         </div>
                     </div>
                     {{/if}}
-                    <div class="list-group">
+                    <div class="list-group" id="tasksPanel">
                         {{#each tasks}}
                         <div class="animated fadeInUp list-group-item {{status}}">
                             <label class="text-info">
                                 {{#if ownsTask}}
                                 <input type="checkbox" name="Mark as Complete" class="markTask" checked="{{status}}">{{else}}
-                                <input type="checkbox" name="Status" class="markTask animated fadeInLeft" checked="{{status}}" disabled="disabled">{{/if}} &nbsp;
+                                <input type="checkbox" name="Status" class="markTask animated fadeInLeft" checked="{{status}}" disabled="disabled">{{/if}}&nbsp;
                                 <strong>{{name}}</strong>
                             </label>
                             <a title="{{assignedto}}" class="taskassignedto pull-right text-info" data-toggle="tooltip" data-placement="bottom">{{showName assignedto}}</a>
@@ -574,8 +581,7 @@
                             <span class="mk-token">{{this}}</span>
                             {{/each}} 
                             {{#if isAdmin}}
-                            <button class="delTask btn btn-danger btn-xs pull-right" data-toggle="tooltip" title="Delete">
-                                <span class="glyphicon glyphicon-trash"></span>
+                            <button class="delTask btn btn-danger btn-xs glyphicon glyphicon-trash pull-right" data-toggle="tooltip" title="Delete">
                             </button>
                             <span class="pull-right">&nbsp;</span>
                             <button class="editTask btn btn-warning btn-xs pull-right" title="Edit Task" data-toggle="button">
@@ -588,7 +594,7 @@
                                     {{#autoForm schema="TaskSchema" doc=this id=this._id type="method" meteormethod="updateTask"}}
                                     <fieldset>
                                         {{> afFormGroup name="name" placeholder="schemaLabel" label=false}}                     
-                                        {{> afFormGroup name="assignedto" label=false options=teamMembers}}
+                                        {{> afFormGroup name="assignedto" type="selectize" label=false options=teamMembers}}
                                         <div class="input-group">
                                             <span class="input-group-addon" id="time-icon">
                                                 <span class="glyphicon glyphicon-time"></span>
@@ -618,13 +624,38 @@
                             {{/if}}
                         </div>
                         {{/each}}
-                        <br>
-                        <div class="row text-center">
-                        <button id="showArchived" class="btn btn-link btn-xs" data-toggle="button">
-                            <span class="glyphicon glyphicon-ok-sign"></span>&nbsp;Show Archived
-                        </button>
                     </div>
+                    <div class="row text-center">
+                    <button id="showArchived" class="btn-xs mk-btn">
+                        <span class="glyphicon glyphicon-ok-sign"></span>&nbsp;Show Completed Tasks
+                    </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="teamfiles">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel panel-body">
+                <button id="uploadb" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus"></span>&nbsp;Upload File
+                </button>
+                <div class="uploadFilePanel">
+                    {{#autoForm schema="TeamFilesSchema" type="method"}}
+                        {{>afQuickField name="files"}}
+                        <button type="submit" class="btn btn-primary btn-xs">Upload</button>
+                    {{/autoForm}}
+                </div>
+                <br>
+                <div class="list-group">
+                {{#each teamFiles}}
+                    <div class="list-group-item">
+                        <img class="img-circle" src="{{this.url}}" width="100">
+                    </div>
+                {{/each}}
                 </div>
             </div>
         </div>

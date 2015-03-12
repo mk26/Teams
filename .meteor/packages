@@ -11,9 +11,11 @@ aldeed:collection2
 aldeed:autoform@=4.2.2
 accounts-password
 accounts-base
-accounts-ui
-cfs:gridfs
+cfs:gridfs@=0.0.27
 iron:router
 tsega:bootstrap3-datetimepicker
 momentjs:moment
 cfs:standard-packages
+comerc:autoform-selectize
+cfs:autoform
+twbs:bootstrap

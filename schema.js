@@ -164,6 +164,22 @@ Files.allow({
   fetch: null
 });
 
+//TeamFiles
+//TeamFiles = new Mongo.Collection("teamfiles");
+TeamFilesSchema = new SimpleSchema({
+    files: {
+        type: String,
+        label: "File",
+        autoform: {
+          afFieldInput: {
+            type: "cfs-file",
+            collection: "files"
+          }
+        }
+    }
+});
+//TeamFiles.attachSchema(TeamFilesSchema);
+
 //Teams
 Teams = new Mongo.Collection("teams");
 TeamSchema = new SimpleSchema({
@@ -201,15 +217,9 @@ TeamSchema = new SimpleSchema({
         optional: true
     },
     files: {
-        type: [String],
-        label: "File IDs",
-        optional: true,
-        autoform: {
-          afFieldInput: {
-            type: "cfs-files",
-            collection: "files"
-          }
-        }
+        type: [TeamFilesSchema],
+        label: "Files",
+        optional: true
     }
 }); 
 TeamSchema.messages ({

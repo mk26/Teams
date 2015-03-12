@@ -21,15 +21,17 @@ Meteor.methods({
 		});
 	},
 	createTeam: function(doc) {
-		//Validate again for safety, then insert
+		//Validate again for safety
 		check(doc, TeamSchema);
 		var mem_usernames=[];
+		//Check if given users exist already
 		if(doc.members) {
 			doc.members.forEach(function(member) {
 				var mem = Meteor.users.findOne({"username": member});
 				if(mem) mem_usernames.push(mem.username);
 			});
 		}
+		//Insert
 		var id = Teams.insert({
 			name: doc.name,
 			members: mem_usernames,
@@ -38,6 +40,7 @@ Meteor.methods({
 			conversations: [],
 			tasks: []
 		});
+		//Update users' profile to reflect team membership status
 		if(id) {
 			Meteor.users.update({"username":doc.admin},{$push: {"profile.adminOf" : id}});
 			if(doc.members) {
@@ -50,7 +53,7 @@ Meteor.methods({
 		return id;
 	},
 	updateInfoForMembers: function(current,revised,t_id) {
-		//Identify added and removed users, then update user's profile about team membership status
+		//Identify change in users, then update their profile to reflect team membership status
 		var change = _.union(current,revised);
 		var teamMembers = Teams.findOne({"_id":t_id}).members;
 		if(change) {
@@ -106,12 +109,15 @@ Meteor.methods({
 		});
 	},
 	markTask: function(task,checkValue) {
+		//Set status of task to true (completed) or false (pending)
 		Teams.update({"tasks._id" : task._id},{$set: {"tasks.$.status":checkValue}});
 	},
 	delTask: function(task) {
+		//Delete specified task
 		Teams.update({},{$pull: {tasks : {"_id" : task._id}}},{multi:true});
 	},
 	updateTask: function(doc) {
+		//Validate again for safety, then update
 		check(doc,TaskSchema);
 		Teams.update({
 			"tasks._id" : doc._id
@@ -141,5 +147,14 @@ Meteor.methods({
 		Teams.update({"_id":t_id},{$pull: {channels : channel_id}});
 		if(messages) Messages.remove({"_id": {$in : messages}});
 		Channels.remove({"_id":channel_id});
+	},
+	getEmailNamePair: function(t_id) {
+		var members = Teams.findOne({"_id":t_id},{fields:{members:1}}).members;
+		var result = {};
+		members.forEach(function(member, i) {
+			var name = Meteor.users.findOne({"username": member}).profile.name;
+			result[member] = name + " <" + member + ">";
+		});
+		return result;
 	}
 });

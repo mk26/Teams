@@ -45,7 +45,7 @@ Template.commonlayout.events({
         }
     },
     'mouseover #logoutb': function() {
-        $('#logoutb').tooltip('show');
+        //$('#logoutb').tooltip('show');
     }
 });
 
@@ -55,6 +55,13 @@ function animate(elt,style) {
 	setTimeout(function() {
 		$(elt).addClass("animated "+style);
 	}, 1);
+}
+
+function updateUIHelpers() {
+	setTimeout(function() {
+		$('[data-toggle="tooltip"]').tooltip();
+		$('.taskassignedto').tooltip();
+	}, 200);
 }
 
 /* User Management */
@@ -238,8 +245,10 @@ AutoForm.hooks({
                 Session.set('currentChannel',result);
                 $('.channelitem').removeClass("active");
                 $('.convitem').removeClass("active");
-                $('.inputMsg').focus();
-                $('#'+result).addClass("active");
+                setTimeout(function () {
+                	$('#'+result).addClass("active");
+                	$('.inputMsg').focus();
+                }, 200);
             }
         }
     },
@@ -254,6 +263,7 @@ AutoForm.hooks({
         after: {
             insert: function(error, result, template) {
                 Channels.update({"_id":Session.get('currentChannel')},{$addToSet: {"messages" : result}});
+                
             }
         }
     },
@@ -280,8 +290,10 @@ AutoForm.hooks({
     			Session.set('currentConv',result);
     			$('.channelitem').removeClass("active");
     			$('.convitem').removeClass("active");
-    			$('#'+result).addClass("active");
-    			$('.inputMsg').focus();
+    			setTimeout(function () {
+    				$('#'+result).addClass("active");
+    				$('.inputMsg').focus();
+    			}, 200);
     		}
     	}
     },
@@ -329,7 +341,6 @@ Template.teams.helpers({
         });
     },
     tasks: function() {
-        t_id = Session.get('currentTeam');
         var result = [];
         var tasks = Teams.find({
             "tasks": {
@@ -352,6 +363,15 @@ Template.teams.helpers({
                 }
             });
         });
+        var keyword = Session.get('taskSearchKeyword');
+        if(keyword) {
+	        var field = $('.searchType')[0].selectize.getValue();
+	        result = _.filter(result, function(task){ 
+		        if(field=="tags")
+		        	return task.tags.join().match(new RegExp(keyword,"i"))
+		        else return task[field].match(new RegExp(keyword,"i"))
+		    });
+		}
         var sort_order = Session.get('sortOrder') ? Session.get('sortOrder') : "name";
         return _.sortBy(result, function(e) {
             return e[sort_order];
@@ -377,6 +397,9 @@ Template.teams.events({
     },
     'change #sortByStatus': function(e) {
         Session.set('sortOrder', 'status');
+    },
+    'keyup .taskSearch': function(e) {
+	    Session.set('taskSearchKeyword',e.target.value);
     }
 });
 
@@ -384,33 +407,33 @@ Template.teams.rendered = function() {
     $('#members').tokenfield({
         inputType: 'email'
     });
-};
+    $('.searchType').selectize({
+	    sortField: 'text'
+	});
+}
 
 //Specific Team page
 Template.team.helpers({
-    name: function() {
-        return this.name;
-    },
     tasks: function() {
-        var sort_order = Session.get('sortOrder') ? Session.get('sortOrder') : "status";
-        var tasks = Teams.findOne({"_id": this._id}).tasks;
+        var tasks = Teams.findOne({"_id": this._id},{fields: {tasks: 1}}).tasks;
+        //Show all tasks or pending tasks only
         tasks = Session.get('archived') ? tasks : _.where(tasks, {status:false});
+        //Sort Order
+        var sort_order = Session.get('sortOrder') || "status";
+        updateUIHelpers();
         return _.sortBy(tasks, function(e) {
             return e[sort_order];
         });
-        //return Tasks.find({"teamid":t_id}).fetch();
     },
     ownsTask: function() {
         if (this.assignedto == Meteor.user().username)
             return true;
         else return false;
     },
-    taskSchema: function() {
-        return TaskSchema;
-    },
     teamMembers: function() {
+	    var query = Teams.findOne({"_id":this._id});
         var team = {};
-        var members = _.union(this.members,this.admin);
+        var members = _.union(query.members,query.admin);
         members.forEach(function(member, i) {
             var name = Meteor.users.findOne({"username": member}).profile.name;
             team[member] = name + " <" + member + ">";
@@ -418,31 +441,56 @@ Template.team.helpers({
         return team;
     },
     channels: function() {
+	    updateUIHelpers();
         return Channels.find({"_id": {$in: this.channels}}).fetch();
     },
     channel: function() {
         return Channels.findOne({"_id": Session.get('currentChannel')});
     },
     channelMessages: function() {
-        return Messages.find({"_id": {$in : this.messages}}).fetch();
+	    var msgLimit = Session.get('msgLimit') ? Session.get('msgLimit') : 10;
+	    var query = Messages.find({"_id": {$in : this.messages}},{sort: {timestamp: -1}, limit:msgLimit});
+	    setTimeout(function () {
+		    if(Session.get('loadMode')) {
+		    	$("#channelMsgView").animate({scrollTop: 0}, 700);
+		    	Session.set('loadMode',false);
+			}
+		   	else $("#channelMsgView").animate({scrollTop: $("#channelMsgView")[0].scrollHeight}, 700);
+		}, 200);
+        return query.fetch().reverse();
     },
-    isOwner: function() {
+    isSender: function() {
 	    if (this.from == Meteor.user().username)
 	    	return true;
 	    else return false;
     },
-    formatTime: function() {
-	   return moment(this.timestamp).fromNow();
-	   //format("MMM Do YYYY, h:mm a");
+    formatTimeRelative: function() {
+	    //Return relative date if less than 1 day, else return absolute time
+	    if ((moment().diff(moment(this.timestamp), 'days')) < 1)
+			return moment(this.timestamp).fromNow();
+		else return moment(this.timestamp).format("MMM Do YYYY, h:mm a");
+    },
+    formatTimeAbsolute: function() {
+    	return moment(this.timestamp).format("MMM Do YYYY, h:mm a");
     },
     conversations: function() {
+	    updateUIHelpers();
 	    return Conversations.find({"_id": {$in: this.conversations}, $or : [ {"members": Meteor.user().username}, {"owner":Meteor.user().username}]}).fetch();
     },
     conversation: function() {
     	return Conversations.findOne({"_id": Session.get('currentConv')});
     },
     convMessages: function() {
-    	return Messages.find({"_id": {$in : this.messages}}).fetch();
+	    var msgLimit = Session.get('msgLimit') ? Session.get('msgLimit') : 10;
+    	var query = Messages.find({"_id": {$in : this.messages}},{sort: {timestamp: -1}, limit:msgLimit});
+    	setTimeout(function () {
+    		if(Session.get('loadMode')) {
+    			$("#convMsgView").animate({scrollTop: 0}, 700);
+    			Session.set('loadMode',false);
+    		}
+    	   	else $("#convMsgView").animate({scrollTop: $("#convMsgView")[0].scrollHeight}, 700);
+    	}, 200);
+    	return query.fetch().reverse();
     },
     convMembers: function() {
     	var team = {};
@@ -472,33 +520,47 @@ Template.team.helpers({
 
 Template.team.events({
     'mouseover #infob': function(e, t) {
-        $('#infob').tooltip('show');
+        //$('#infob').tooltip('show');
     },
     'click #infob': function(e, t) {
-        t_id = Session.get('currentTeam');
-        Router.go('/t/' + t_id + '/info/');
+        Router.go('/t/' + this._id + '/info/');
+    },
+    'click #filesb': function(e, t) {
+    	Router.go('/t/' + this._id + '/files/');
     },
     'click #createtaskb': function(e, t) {
         $('#newTask').slideToggle();
     },
     'click #showArchived': function(e, t) {
-    	if(Session.get('archived')==true)
+    	if(Session.get('archived')==true) {	
+	    	$("#showArchived").html("<span class=\"glyphicon glyphicon-ok-sign\"></span>&nbsp;Show Completed Tasks");
     		Session.set('archived',false);
-    	else Session.set('archived',true);
+    	}
+    	else {
+	    	Session.set('archived',true);
+	    	$("#showArchived").html("<span class=\"glyphicon glyphicon-minus-sign\"></span>&nbsp;Hide Completed Tasks");
+	    }
     },
     'click .markTask': function(e) {
+	    var taskItem = $(e.target.parentNode.parentNode);
 	    if(e.target.checked)
-	    	$(e.target.parentNode.parentNode).removeClass("fadeInUp").addClass("flipOutX");
+	    	//animate(taskItem, "flipOutX");
+	    	taskItem.removeClass("fadeInUp").addClass("flipOutX");
 	    else 
-	    	$(e.target.parentNode.parentNode).removeClass("fadeInUp").addClass("bounceIn");
+	    	//animate(taskItem, "bounceIn");
+	    	taskItem.removeClass("fadeInUp").addClass("bounceIn");
 	    var temp=this;
-	    $(e.target.parentNode.parentElement).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-		    $(e.target.parentNode.parentNode).removeClass("flipOutX bounceIn").addClass("fadeInUp");
+	    taskItem.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+		   	taskItem.removeClass("flipOutX bounceIn").addClass("fadeInUp");
         	Meteor.call('markTask', temp, e.target.checked);
     	});
     },
     'click .delTask': function(e) {
-        Meteor.call('delTask', this);
+	    var temp=this;
+	    $(e.target.parentNode).addClass("slideOutRight");
+	    $(e.target.parentNode.parentElement).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+       		Meteor.call('delTask', temp);
+    	});
     },
     'click .editTask': function(e) {
         $('.tasktagse').tokenfield({
@@ -523,18 +585,24 @@ Template.team.events({
     },
     'click .channelitem': function(e) {
 	    Session.set('currentConv', null);
+	    Session.set('msgLimit', null); 
         Session.set('currentChannel', this._id);
         $('.channelitem').removeClass("active");
         $('.convitem').removeClass("active");
-        $('.inputMsg').focus();
+        setTimeout(function() {
+	        $('.inputMsg').focus();
+        }, 100);
         $(e.target).addClass("active");
     },
     'click .convitem': function(e) {
 	    Session.set('currentChannel', null);
+	    Session.set('msgLimit', null); 
     	Session.set('currentConv', this._id);
     	$('.channelitem').removeClass("active");
     	$('.convitem').removeClass("active");
-    	$('.inputMsg').focus();
+    	setTimeout(function() {
+    				$('.inputMsg').focus();
+    	}, 100);
     	$(e.target).addClass("active");
     },
     'click .delConv': function(e) {
@@ -552,11 +620,20 @@ Template.team.events({
 		    Session.set('currentChannel', null);
 		   	Meteor.call('delChannel', temp._id, Session.get('currentTeam'));
    		});
+   	},
+   	'click .loadMoreMsgs' : function(e) {
+	   	Session.set('loadMode',true);
+	   	Session.set('msgLimit',(Session.get('msgLimit') ? Session.get('msgLimit') : 10) + 10);
    	}
 });
 
 Template.team.rendered = function() {
-    $('#tasktags').tokenfield({
+    $('#tasktags').on('tokenfield:createdtoken', function(e) {
+	var re = $('#tasktags').tokenfield('getTokensList');
+	if(_.contains(re, e.attrs.value)) {
+		$(e.relatedTarget).addClass('invalid');
+	}
+	}).tokenfield({
         createTokensOnBlur: true
     });
     $('#taskduedate').datetimepicker({
@@ -568,20 +645,10 @@ Template.team.rendered = function() {
     $('.taskduedatee').datetimepicker({
 		minDate : moment()
 	});
-    $('.taskassignedto').tooltip();
-    
-    this.autorun(function() {
-    	$('[data-toggle="tooltip"]').tooltip();
-    });
+	updateUIHelpers();
 };
 
-
-
 //Team info page
-Template.teaminfo.helpers({
-
-});
-
 Template.teaminfo.events({
     'click #editb': function(e, t) {
         $('#editMembersPanel').slideToggle();
@@ -593,11 +660,13 @@ Template.teaminfo.events({
 });
 
 Template.teaminfo.rendered = function() {
-    $('#members').on('tokenfield:createdtoken', function(e) {
-        var re = /\S+@\S+\.\S+/;
-        var valid = re.test(e.attrs.value);
-        if (!valid) {
-            $(e.relatedTarget).addClass('invalid');
-        }
-    }).tokenfield();
+    $('#members').tokenfield();
 };
+
+//Team files page
+Template.teamfiles.helpers({
+	teamFiles : function(){
+		return Files.find({"_id": {$in : this.files}}).fetch();
+		//TeamFiles.find({"_id":this.files}).fetch();
+	}
+});
