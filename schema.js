@@ -70,6 +70,11 @@ TaskSchema = new SimpleSchema({
         label: "Status",
         optional: true      
     },
+    notes: {
+        type: String,
+        label: "Notes",
+        optional:true
+    },
     _id: {
         type: String,
         label: "ID"
@@ -157,13 +162,6 @@ Files = new FS.Collection("files", {
   stores: [new FS.Store.GridFS("filesStore")]
 });
 
-Files.allow({
-  download: function () {
-    return true;
-  },
-  fetch: null
-});
-
 //TeamFiles
 //TeamFiles = new Mongo.Collection("teamfiles");
 TeamFilesSchema = new SimpleSchema({
@@ -227,3 +225,45 @@ TeamSchema.messages ({
     //"required members": "Team must have a minimum of 1 member"
 });
 Teams.attachSchema(TeamSchema);
+
+//Security
+Channels.allow({
+    insert: function(userId, doc) {
+        return userId;
+    },
+    update: function(userId, doc, fields, modifier) {
+        return userId;
+    },
+});
+Conversations.allow({
+    insert: function(userId, doc) {
+        return userId;
+    },
+    update: function(userId, doc, fields, modifier) {
+        return userId;
+    }
+});
+Messages.allow({
+    insert: function(userId, doc) {
+        return userId;
+    },
+    remove: function(userId, doc) {
+        return userId;
+    }
+});
+Files.allow({
+  download: function () {
+    return true;
+  },
+  fetch: null
+});
+Teams.allow({
+    update: function(userId, doc, fieldNames, modifier) {
+        var username = Meteor.users.findOne({"_id": userId}, {fields: {username: 1}}).username;
+        if (_.contains(fieldNames, "conversations")) {
+            return (userId && (doc.admin === username || _.contains(doc.members, username)));
+        } else {
+            return (userId && doc.admin === username);
+        }
+    }
+});

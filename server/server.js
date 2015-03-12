@@ -131,6 +131,16 @@ Meteor.methods({
 			}
 		});
 	},
+	updateTaskNotes: function(task_id, notes) {
+		Teams.update({
+			"tasks._id" : task_id
+			},
+			{
+				$set : {
+					"tasks.$.notes": notes
+			}
+		});
+	},
 	delConv: function(conv_id,t_id) {
 		//Find messages in the conversation
 		var messages = Conversations.findOne({"_id":conv_id}).messages;

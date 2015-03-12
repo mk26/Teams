@@ -2,7 +2,7 @@
 <template name="commonlayout">
     <div class="container-fluid">
         <div class="row">
-            {{#if currentUser}}
+            {{#with currentUser}}
             <div class="pull-right">
                 <button id="back" class="btn btn-xs btn-default">
                     <span class="glyphicon glyphicon-menu-left"></span>
@@ -11,13 +11,13 @@
                     <img class="img-circle" src="/images/teams.png" width="36">
                 </a>&nbsp;
                 <a class="btn btn-default" href="/account" title="Manage account">
-                    <span class="glyphicon glyphicon-user"></span>&nbsp;{{currentName}}
+                    <span class="glyphicon glyphicon-user"></span>&nbsp;{{#with profile}}{{name}}{{/with}}
                 </a>&nbsp;
                 <button id="logoutb" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Logout">
                     <span class="glyphicon glyphicon-log-out"></span>
                 </button>
             </div>
-            {{/if}}
+            {{/with}}
         </div>
         <div class="row">
             {{> yield}}
@@ -60,14 +60,16 @@
                 </div>
                 <div class="panel-body">
                     <div class="list-group">
+                        {{#with currentUser}}
                         <span class="list-group-item">
                             <h5 class="text-muted">
                                 <strong>Name / Email</strong>
                             </h5>
-                            <h4>{{currentName}}
-                                <span class="text-muted">&lt;{{currentUserName}}&gt;</span>
+                            <h4>{{#with profile}}{{name}}{{/with}}
+                                <span class="text-muted">&lt;{{username}}&gt;</span>
                             </h4>
                         </span>
+                        {{/with}}
                         <span class="list-group-item">
                             <h5 class="text-muted">
                                 <strong>Password</strong>
@@ -230,9 +232,9 @@
             </div>
         </div>
         <div class="col-sm-4 col-sm-offset-3">
-            <div class="panel panel-info">
+            <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title pull-left">Your Tasks</h3>
+                    <h3 class="panel-title pull-left"><strong>Your Tasks</strong></h3><br>
                     <div class="btn-group btn-group-xs pull-right" data-toggle="buttons">
                         <label class="btn btn-default" disabled>
                             <span class="glyphicon glyphicon-sort-by-attributes pull-right sort-icon"></span>
@@ -245,6 +247,11 @@
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByStatus" autocomplete="off">Status</label>
                     </div>
+                    {{#if isNone pendingTasks}}
+                    <div class="text-success pull-left animated bounceIn">✔︎ All tasks complete</div>
+                    {{else}}
+                    <div class="text-info pull-left animated flipInX">{{pendingTasks}}</div>
+                    {{/if}}
                     <br>
                 </div>
                 <div class="panel-body">
@@ -267,7 +274,12 @@
                                 <input type="checkbox" name="Mark as Complete" class="markTask" checked="{{status}}">&nbsp;
                                 <strong>{{name}}</strong>
                             </label>
+                            <button class="addNoteToTask btn btn-info btn-xs glyphicon glyphicon-list-alt pull-right" title="Add notes"></button>
+                            <span class="pull-right">&nbsp;</span>
                             <a href="/t/{{teamID}}" title="{{assignedto}}" class="taskassignedto pull-right text-info" data-toggle="tooltip" data-placement="bottom">{{teamName}}</a>
+                            <div id="notePanel-{{this._id}}" hidden="true">
+                                <textarea class="form-control tasknotes" id=note-{{this._id}} name="notes" placeholder="Notes" aria-describedby="tag-icon" value={{this.notes}}></textarea>
+                            </div>
                             <p class="text-muted">{{due}}</p>
                             {{#each tags}}
                             <span class="mk-token">{{this}}</span>
@@ -372,7 +384,6 @@
     <div class="row">
         <div class="col-md-8">
             <div class="panel panel-default">
-
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-sm-4">
@@ -517,7 +528,19 @@
         <div class="col-md-4">
             <div class="panel panel-default">
                 <div class="row text-center">
-                    <br>
+                    <div class="statsPanel">
+                    {{#if isNone pendingTasks}}
+                    <div class="text-success animated bounceIn" style="display:inline-block">✔︎ All tasks complete</div>
+                    {{else}}
+                    <div class="text-info animated flipInX" style="display:inline-block">{{pendingTasks}}</div>                    &middot;
+
+                    {{#if isNone yourPendingTasks}}
+                    <div class="text-success animated bounceIn" style="display:inline-block">none yours ✔︎</div>
+                    {{else}}
+                    <div class="text-warning animated flipInX" style="display:inline-block">{{yourPendingTasks}}</div>
+                    {{/if}}
+                    {{/if}}
+                    </div>
                     {{#if isAdmin}}
                     <button id="createtaskb" class="btn btn-success btn-xs" data-toggle="tooltip" title="Create New Task"><span class="glyphicon glyphicon-plus"></span></button>&nbsp;
                     {{/if}}
@@ -591,8 +614,16 @@
                                 <input type="checkbox" name="Status" class="markTask animated fadeInLeft" checked="{{status}}" disabled="disabled">{{/if}}&nbsp;
                                 <strong>{{name}}</strong>
                             </label>
+                            {{#if ownsTask}}
+                            <button class="addNoteToTask btn btn-info btn-xs glyphicon glyphicon-list-alt pull-right" title="Add notes"></button>
+                            {{/if}}
+                            <span class="pull-right">&nbsp;&nbsp;</span>
                             <a title="{{assignedto}}" class="taskassignedto pull-right text-info" data-toggle="tooltip" data-placement="bottom">{{showName assignedto}}</a>
-
+                            {{#if ownsTask}}
+                            <div id="notePanel-{{this._id}}" hidden="true">
+                            <textarea class="form-control tasknotes" id=note-{{this._id}} name="notes" placeholder="Notes" aria-describedby="tag-icon" value={{this.notes}}></textarea>
+                            </div>
+                            {{/if}}
                             <p class="text-muted">{{due}}</p>
                             {{#each tags}}
                             <span class="mk-token">{{this}}</span>
@@ -601,9 +632,7 @@
                             <button class="delTask btn btn-danger btn-xs glyphicon glyphicon-trash pull-right" data-toggle="tooltip" title="Delete">
                             </button>
                             <span class="pull-right">&nbsp;</span>
-                            <button class="editTask btn btn-warning btn-xs pull-right" title="Edit Task" data-toggle="button">
-                                <span class="glyphicon glyphicon-pencil"></span>
-                            </button>
+                            <button class="editTask btn btn-warning btn-xs glyphicon glyphicon-pencil pull-right" title="Edit Task" data-toggle="button"></button>
                             <br>
                             <br>
                             <div id={{this._id}} class="panel panel-default editTaskPanel" hidden>
@@ -620,7 +649,7 @@
                                         </div>
                                         <br>
                                         <div class="input-group">
-                                            <span class="input-group-addon" id="icon">
+                                            <span class="input-group-addon" id="tag-icon">
                                                 <span class="glyphicon glyphicon-tag"></span>
                                             </span>
                                             {{> afFieldInput name="tags" label=false class="tasktags" placeholder="Tags" aria-describedby="tag-icon"}}</div>

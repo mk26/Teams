@@ -69,6 +69,17 @@ button:hover, a:hover, label:hover, .option:hover, .selectize-input:hover {
 }
 
 /* Tasks UI */
+.statsPanel {
+	margin: 5px;
+}
+.tasknotes {
+	max-width: 100%;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.popover {
+	z-index: 1000;
+}
 .sort-icon {
 	padding-top: 2px;
 }

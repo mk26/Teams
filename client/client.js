@@ -1,14 +1,5 @@
 /* Common functions */
 
-//Get User's name
-Template.registerHelper('currentName', function() {
-    return Meteor.user().profile.name;
-});
-
-Template.registerHelper('currentUserName', function() {
-    return Meteor.user().username;
-});
-
 //Check whether the current user is the Admin of the Team
 Template.registerHelper('isAdmin', function() {
     var currentTeam = Teams.findOne({"_id": Session.get('currentTeam')});
@@ -20,10 +11,16 @@ Template.registerHelper('isAdmin', function() {
 
 //Check whether the current user is a Member of the Team
 Template.registerHelper('isMember', function() {
-    if ($.inArray(Meteor.user().username, this.members) == -1)
-        return false;
-    else
+    if (_.contains(this.members, Meteor.user().username))
         return true;
+    else
+        return false;
+});
+
+//Check if none
+UI.registerHelper('isNone', function (obj) {
+	if(obj==0) return true;
+	else return false;
 });
 
 //Map Username to Name
@@ -362,6 +359,15 @@ AutoForm.addHooks(null, {
 
 //All Teams page
 Template.teams.helpers({
+	pendingTasks : function() {
+		var result = "";
+		if (Session.get('userPendingTasks') == 0)
+		 	result = 0;
+		else if (Session.get('userPendingTasks') == 1)
+			result = "1 task pending";
+		else result = Session.get('userPendingTasks') + " tasks pending";
+		return result;
+	},
     memteams: function() {
         return Teams.find({
             'members': Meteor.user().username
@@ -396,6 +402,8 @@ Template.teams.helpers({
                 }
             });
         });
+        var count = _.where(result, {status:false}).length;
+        Session.set('userPendingTasks',count);
         result = Session.get('archived') ? result : _.where(result, {status:false});
         initTooltips();
         var keyword = Session.get('taskSearchKeyword');
@@ -442,6 +450,9 @@ Template.teams.events({
         	Meteor.call('markTask', temp, e.target.checked);
         });
     },
+    'click .addNoteToTask': function(e) {
+    	$('#notePanel-' + this._id).slideToggle();
+    },
     'change #sortByName': function(e) {
         Session.set('sortOrder', 'name');
     },
@@ -453,6 +464,10 @@ Template.teams.events({
     },
     'keyup .taskSearch': function(e) {
 	    Session.set('taskSearchKeyword',e.target.value);
+    },
+    'blur .tasknotes': function(e) {
+    	var task_id = e.target.id.split("-")[1];
+    	Meteor.call('updateTaskNotes', task_id, e.target.value, function(error, result) {});
     }
 });
 
@@ -475,6 +490,10 @@ Template.team.helpers({
     tasks: function() {
         var tasks = Teams.findOne({"_id": this._id},{fields: {tasks: 1}}).tasks;
         //Show all tasks or pending tasks only
+        var count = _.where(tasks, {status:false}).length;
+        Session.set('teamPendingTasks',count);
+        var yourCount = _.where(tasks, {status:false, assignedto:Meteor.user().username}).length;
+        Session.set('yourPendingTasks',yourCount);
         tasks = Session.get('archived') ? tasks : _.where(tasks, {status:false});
         //Sort Order
         var sort_order = Session.get('sortOrder') || "due";
@@ -588,6 +607,22 @@ Template.team.helpers({
    	  		if (this.owner == Meteor.user().username)
    	  			return true;
    	  		else return false;
+   	},
+   	pendingTasks : function() {
+   		var result = "";
+   		if (Session.get('teamPendingTasks') == 0)
+   		 	result = 0;
+   		else if (Session.get('teamPendingTasks') == 1)
+   			result = "1 task pending total";
+   		else result = Session.get('teamPendingTasks') + " tasks pending total";
+   		return result;
+   	},
+   	yourPendingTasks : function() {
+   		var result = "";
+   		if (Session.get('yourPendingTasks') == 0)
+   		 	result = 0;
+   		else result = Session.get('yourPendingTasks') + " yours";
+   		return result;
    	}
 });
 
@@ -635,6 +670,9 @@ Template.team.events({
     'click .editTask': function(e) {
         initSplFields();
         $('#' + this._id).slideToggle();
+    },
+    'click .addNoteToTask': function(e) {
+    	$('#notePanel-' + this._id).slideToggle();
     },
     'change #sortByName': function(e) {
         Session.set('sortOrder', 'name');
@@ -692,6 +730,10 @@ Template.team.events({
    	},
    	'keyup .taskSearch': function(e) {
    		Session.set('taskSearchKeyword',e.target.value);
+   	},
+   	'blur .tasknotes': function(e) {
+	   	var task_id = e.target.id.split("-")[1];
+	   	Meteor.call('updateTaskNotes', task_id, e.target.value, function(error, result) {});
    	}
 });
 
