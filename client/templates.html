@@ -97,7 +97,7 @@
                 <h3>Let's get started{{name}}</h3>
             </div>
             <div class="row">
-                {{#autoForm schema=userSchema id="signupForm" type="method" meteormethod="signup"}}
+                {{#autoForm schema="UserRegSchema" id="signupForm" type="method" meteormethod="signup"}}
                 <fieldset>
                     <button type="reset" class="btn btn-link pull-right">
                         <span class="glyphicon glyphicon-refresh"></span>&nbsp;Reset
@@ -128,7 +128,7 @@
                 <img src="/images/teams.png" alt="Teams Logo" width="150" height="150">
             </div>
             <div class="row">
-                {{#autoForm schema=userSchema id="loginForm"}}
+                {{#autoForm schema="UserLoginSchema" id="loginForm"}}
                 <fieldset>
                     <button type="reset" class="btn btn-link pull-right">
                         <span class="glyphicon glyphicon-refresh"></span>&nbsp;Reset
@@ -240,9 +240,9 @@
                         </label>
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByName" autocomplete="off" checked>Name</label>
-                        <label class="btn btn-primary">
-                            <input type="radio" name="options" id="sortByDue" autocomplete="off">Due</label>
                         <label class="btn btn-primary active">
+                            <input type="radio" name="options" id="sortByDue" autocomplete="off">Due</label>
+                        <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByStatus" autocomplete="off">Status</label>
                     </div>
                     <br>
@@ -256,14 +256,13 @@
                             <select class="searchType" placeholder="Scope">
                               <option value="name">Name</option> 
                               <option value="tags">Tags</option>
-                              <option value="assignedto">Assigned to</option>
                             </select>
                         </div>
                     </div>
                     <br>
                     <div class="list-group">
                         {{#each tasks}}
-                        <div class="list-group-item {{status}}">
+                        <div class="animated fadeInUp list-group-item {{status}}">
                             <label class="text-info">
                                 <input type="checkbox" name="Mark as Complete" class="markTask" checked="{{status}}">&nbsp;
                                 <strong>{{name}}</strong>
@@ -275,6 +274,11 @@
                             {{/each}}
                         </div>
                         {{/each}}
+                    </div>
+                    <div class="row text-center">
+                    <button id="showArchived" class="btn-xs mk-btn">
+                        <span class="glyphicon glyphicon-ok-sign"></span>&nbsp;Show Completed Tasks
+                    </button>
                     </div>
                 </div>
             </div>
@@ -524,18 +528,18 @@
                         </label>
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByName" autocomplete="off" checked>Name</label>
-                        <label class="btn btn-primary">
+                        <label class="btn btn-primary active">
                             <input type="radio" name="options" id="sortByDue" autocomplete="off">Due</label>
                         <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByAssigned" autocomplete="off">Assigned to</label>
-                        <label class="btn btn-primary active">
+                        <label class="btn btn-primary">
                             <input type="radio" name="options" id="sortByStatus" autocomplete="off">Status</label>
                     </div>
                     <br>
                 </div>
                 <div class="panel-body">
                     {{#if isAdmin}}
-                    <div class="panel panel-default" id="newTask" hidden>
+                    <div class="panel panel-default" id="newTaskPanel" hidden>
                         <div class="panel-body">
                             {{#autoForm schema="TaskSchema" id="createTaskForm" type="method" meteormethod="createTask"}}
                                 {{> afFormGroup name="name" placeholder="schemaLabel" label=false}} 
@@ -544,7 +548,7 @@
                                     <span class="input-group-addon" id="time-icon">
                                         <span class="glyphicon glyphicon-time"></span>
                                     </span>
-                                    {{> afFieldInput name="due" placeholder="Due Date" id="taskduedate" label=false aria-describedby="time-icon"}}
+                                    {{> afFieldInput name="due" placeholder="Due Date" class="taskduedate" label=false aria-describedby="time-icon"}}
                                 </div>
 
                                 <br>
@@ -565,6 +569,19 @@
                         </div>
                     </div>
                     {{/if}}
+                    <div class="row">
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control taskSearch" placeholder="Search">
+                        </div>
+                        <div class="col-sm-5">
+                            <select class="searchType" placeholder="Scope">
+                              <option value="name">Name</option> 
+                              <option value="tags">Tags</option>
+                              <option value="assignedto">Assigned to</option>
+                            </select>
+                        </div>
+                    </div>
+                    <br>
                     <div class="list-group" id="tasksPanel">
                         {{#each tasks}}
                         <div class="animated fadeInUp list-group-item {{status}}">
@@ -599,14 +616,14 @@
                                             <span class="input-group-addon" id="time-icon">
                                                 <span class="glyphicon glyphicon-time"></span>
                                             </span>
-                                            {{> afFieldInput name="due" placeholder="Due Date" class="taskduedatee" label=false aria-describedby="time-icon"}}
+                                            {{> afFieldInput name="due" placeholder="Due Date" class="taskduedate" label=false aria-describedby="time-icon"}}
                                         </div>
                                         <br>
                                         <div class="input-group">
                                             <span class="input-group-addon" id="icon">
                                                 <span class="glyphicon glyphicon-tag"></span>
                                             </span>
-                                            {{> afFieldInput name="tags" label=false class="tasktagse" placeholder="Tags" aria-describedby="tag-icon"}}</div>
+                                            {{> afFieldInput name="tags" label=false class="tasktags" placeholder="Tags" aria-describedby="tag-icon"}}</div>
                                         <div hidden="hidden">
                                             {{> afFieldInput name="_id"}} 
                                             {{> afFieldInput name="teamID"}}
