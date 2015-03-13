@@ -30,6 +30,10 @@ UI.registerHelper("showName", function(username) {
         return user.profile.name;
 });
 
+UI.registerHelper("autoLink", function(text) {
+	return Autolinker.link(text);
+});
+
 //Go Back, Logout
 Template.commonlayout.events({
     'click #back': function() {
@@ -52,6 +56,26 @@ function animate(elt,style) {
 	setTimeout(function() {
 		$(elt).addClass("animated "+style);
 	}, 1);
+}
+
+function notify(title,content) {
+	var iconUrl = "/favicon_32.png";
+    if (!("Notification" in window)) {
+        alert("Sorry, this browser does not support notifications");
+    } 
+    else if (Notification.permission === "granted") {
+        //If permission already available
+        var notification = new Notification(title,{body:content, icon: iconUrl});
+    } 
+    else if (Notification.permission !== 'denied') {
+        //Get permission from User
+        Notification.requestPermission(function(permission) {
+            // If the user is okay, let's create a notification
+            if (permission === "granted") {
+                var notification = new Notification(title,{body:content, icon: iconUrl});
+            }
+        });
+    }
 }
 
 /* Common UI related functions */
@@ -548,6 +572,7 @@ Template.team.helpers({
 			}
 		   	else $("#channelMsgView").animate({scrollTop: $("#channelMsgView")[0].scrollHeight}, 700);
 		}, 200);
+		notify(Channels.findOne({"_id": Session.get('currentChannel')}).name,"Message received");
         return query.fetch().reverse();
     },
     isSender: function() {
@@ -582,6 +607,7 @@ Template.team.helpers({
     		}
     	   	else $("#convMsgView").animate({scrollTop: $("#convMsgView")[0].scrollHeight}, 700);
     	}, 200);
+    	notify("Teams Private Conversation","Message received");
     	return query.fetch().reverse();
     },
     convMembers: function() {
@@ -766,6 +792,43 @@ Template.teaminfo.rendered = function() {
 Template.teamfiles.helpers({
 	teamFiles : function(){
 		return Files.find({"_id": {$in : this.files}}).fetch();
-		//TeamFiles.find({"_id":this.files}).fetch();
+	},
+	formatSize: function(bytes){
+		if      (bytes>=1000000000) {bytes=(bytes/1000000000).toFixed(2)+' GB';}
+		else if (bytes>=1000000)    {bytes=(bytes/1000000).toFixed(2)+' MB';}
+		else if (bytes>=1000)       {bytes=(bytes/1000).toFixed(2)+' KB';}
+		else if (bytes>1)           {bytes=bytes+' bytes';}
+		else if (bytes==1)          {bytes=bytes+' byte';}
+		else                        {bytes='0 byte';}
+		return bytes;
+	},
+	formatTimeRelative: function(time) {
+			//Return relative date if less than 1 day, else return absolute time
+			if ((moment().diff(moment(time), 'days')) < 1)
+				return moment(time).fromNow();
+			else return moment(time).format("MMM Do YYYY, h:mm a");
+	}
+});
+
+Template.teamfiles.events({
+	'change #uploadFileBar': function(e,t) {
+		notify("Teams","File uploaded");
+		FS.Utility.eachFile(e, function(file) {
+			Files.insert(file, function (error, fileObj) {
+				if (error) 
+					alert("Error in file upload: " + error);
+				if (fileObj)
+					Teams.update({"_id": Session.get('currentTeam')}, {$addToSet: {"files": fileObj._id}});
+		});
+	});
+		$("#uploadFileBar").replaceWith($("#uploadFileBar").clone());
+	},
+	'click .delFileb': function(e,t) {
+		var file_id=e.target.id;
+		$(e.target.parentNode.parentNode).addClass("zoomOut");
+		$(e.target.parentNode.parentNode).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+			Files.remove({"_id":file_id});
+			Teams.update({"_id":Session.get('currentTeam')}, {$pull: {"files": file_id}});
+		});
 	}
 });

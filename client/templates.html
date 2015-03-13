@@ -1,7 +1,7 @@
 <!-- Common -->
 <template name="commonlayout">
     <div class="container-fluid">
-        <div class="row">
+        <div class="row animated fadeInRight">
             {{#with currentUser}}
             <div class="pull-right">
                 <button id="back" class="btn btn-xs btn-default">
@@ -27,7 +27,7 @@
 
 <!-- Errors -->
 <template name="notfound">
-    <div class="panel panel-danger col-lg-6 col-lg-offset-3 mk-panel-error" role="alert">
+    <div class="panel panel-danger col-lg-6 col-lg-offset-3 mk-panel-error animated swing" role="alert">
         <div class="panel-body text-center">
             <h2>
                 <span class="label label-danger">404</span>
@@ -38,7 +38,7 @@
 </template>
 
 <template name="accessdenied">
-    <div class="panel panel-danger col-lg-6 col-lg-offset-3 mk-panel-error" role="alert">
+    <div class="panel panel-danger col-lg-6 col-lg-offset-3 mk-panel-error animated swing" role="alert">
         <div class="panel-body text-center">
             <h2>
                 <span class="glyphicon glyphicon-minus-sign text-danger"></span>
@@ -50,7 +50,7 @@
 
 <!-- User management -->
 <template name="account">
-    <div class="col-sm-6 col-sm-offset-3">
+    <div class="col-sm-6 col-sm-offset-3 animated fadeInDown">
         <div class="row">
             <div class="panel panel-info">
                 <div class="panel-heading text-center">
@@ -156,7 +156,7 @@
 <!-- All Teams page -->
 
 <template name="teams">
-    <button id="createb" class="btn btn-success">
+    <button id="createb" class="btn btn-success animated fadeInDown">
         <span class="glyphicon glyphicon-plus"></span>&nbsp;Create New Team
     </button>
     <br>
@@ -202,11 +202,11 @@
                 <div class="panel-body">
                     <div class="list-group">
                         {{#each adminteams}}
-                        <a href="/t/{{_id}}" class="list-group-item">{{name}}
+                        <a href="/t/{{_id}}" class="list-group-item animated fadeInUp">{{name}}
                             <span class="glyphicon glyphicon-chevron-right pull-right"></span>
                         </a>
                         {{else}}
-                        <p class="list-group-item text-muted text-center">
+                        <p class="list-group-item text-muted text-center animated fadeIn">
                             <em>Not managing any teams yet</em>
                         </p>{{/each}}
                     </div>
@@ -219,11 +219,11 @@
                 <div class="panel-body">
                     <div class="list-group">
                         {{#each memteams}}
-                        <a href="/t/{{_id}}" class="list-group-item">{{name}}
+                        <a href="/t/{{_id}}" class="list-group-item animated fadeInUp">{{name}}
                             <span class="glyphicon glyphicon-chevron-right pull-right"></span>
                         </a>
                         {{else}}
-                        <p class="list-group-item text-muted text-center">
+                        <p class="list-group-item text-muted text-center animated fadeIn">
                             <em>Not a part of any team yet</em>
                         </p>
                         {{/each}}
@@ -231,7 +231,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-4 col-sm-offset-3">
+        <div class="col-sm-4 col-sm-offset-3 animated slideInRight">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title pull-left"><strong>Your Tasks</strong></h3><br>
@@ -301,7 +301,7 @@
 
 <!-- Team page -->
 <template name="teaminfo">
-    <div class="col-sm-6 col-sm-offset-3">
+    <div class="col-sm-6 col-sm-offset-3 animated fadeInDown">
         <div class="row">
             <div class="panel panel-info">
                 <div class="panel-heading text-center">
@@ -389,7 +389,7 @@
                         <div class="col-sm-4">
                             <div class="list-group">
                                 {{#if isAdmin}}
-                                <div class="list-group-item">
+                                <div class="list-group-item animated fadeIn">
                                     {{#autoForm collection="Channels" id="createChannelForm" type="insert"}} 										{{>afFormGroup name="name" placeholder="+ New Channel" label=false id="createChannel"}} 
                                     {{/autoForm}}
                                 </div>
@@ -403,7 +403,7 @@
                                 </a>
                                 {{/each}}
                                 <hr>
-                                <div class="list-group-item">
+                                <div class="list-group-item animated fadeIn">
                                     <div class="row" id="createConv">
                                     {{#autoForm collection="Conversations" id="createConvForm" type="insert"}} 
                                     <div id="createConvMemList">
@@ -443,7 +443,7 @@
                                         {{#each channelMessages}} 
                                         {{#if isSender}}
                                         <div class="bubblewrap">
-                                        <div class="bubble-right animated bounceInRight">{{message}}
+                                        <div class="bubble-right animated bounceInRight">{{{autoLink message}}}
                                         </div>
                                         <div class="bubble-user-right animated bounceInRight" title="{{from}}">
                                             <span title="{{formatTimeAbsolute timestamp}}" class="timestamp">{{formatTimeRelative timestamp}}</span>
@@ -451,7 +451,7 @@
                                         </div>
                                         {{else}}
                                         <div class="bubblewrap">
-                                        <div class="bubble-left animated bounceInLeft">{{message}}
+                                        <div class="bubble-left animated bounceInLeft">{{{autoLink message}}}
                                         </div>
                                         <div class="bubble-user-left animated bounceInLeft" title="{{from}}">
                                             <strong>{{showName from}}</strong>
@@ -487,7 +487,7 @@
                                         {{#each convMessages}} 
                                         {{#if isSender}}
                                         <div class="bubblewrap">
-                                        <div class="bubble-right animated bounceInRight">{{message}}
+                                        <div class="bubble-right animated bounceInRight">{{{autoLink message}}}
                                         </div>
                                         <div class="bubble-user-right animated bounceInRight" title="{{from}}">
                                             <span title="{{formatTimeAbsolute timestamp}}" class="timestamp">{{formatTimeRelative timestamp}}</span>
@@ -495,7 +495,7 @@
                                         </div>
                                         {{else}}
                                         <div class="bubblewrap">
-                                        <div class="bubble-left animated bounceInLeft">{{message}}
+                                        <div class="bubble-left animated bounceInLeft">{{{autoLink message}}}
                                         </div>
                                         <div class="bubble-user-left animated bounceInLeft" title="{{from}}">
                                             <strong>{{showName from}}</strong>
@@ -526,7 +526,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="panel panel-default">
+            <div class="panel panel-default animated slideInRight">
                 <div class="row text-center">
                     <div class="statsPanel">
                     {{#if isNone pendingTasks}}
@@ -683,27 +683,40 @@
 </template>
 
 <template name="teamfiles">
-    <div class="col-md-6">
-        <div class="panel panel-default">
+    <div class="col-md-6 animated fadeIn">
+        <div class="panel panel-info fileListPanel">
+            <div class="panel panel-title">
+                <h4 class="text-center text-info"><strong>Shared Files</strong></h4>
+            </div>
             <div class="panel panel-body">
-                <button id="uploadb" class="btn btn-success">
-                    <span class="glyphicon glyphicon-plus"></span>&nbsp;Upload File
-                </button>
-                <div class="uploadFilePanel">
-                    {{#autoForm schema="TeamFilesSchema" type="method"}}
-                        {{>afQuickField name="files"}}
-                        <button type="submit" class="btn btn-primary btn-xs">Upload</button>
-                    {{/autoForm}}
-                </div>
-                <br>
                 <div class="list-group">
-                {{#each teamFiles}}
-                    <div class="list-group-item">
-                        <img class="img-circle" src="{{this.url}}" width="100">
+                    {{#each teamFiles}}
+                    <div class="row list-group-item animated fadeInUp">
+                        <div class="col-md-2">
+                            {{#if isImage}}
+                            <a class="fileLink" href="{{this.url}}"><img class="img-circle imgPreview center-block animated bounceIn" src="{{this.url}}"></a>
+                            {{else}}
+                            <div class="text-center fileIcon">
+                            <a class="fileLink" href="{{this.url}}"><span class="glyphicon glyphicon-file"></span></a>
+                            </div>
+                            {{/if}}
+                        </div>
+                        <div class="col-md-10">
+                            <button id="{{this._id}}" class="btn btn-sm btn-danger delFileb pull-right glyphicon glyphicon-trash" title="Delete File"></button>
+                            <strong><a class="fileNameURL" href="{{this.url}}">{{this.name}}</a></strong>
+                            <div class="text-muted">{{formatSize this.original.size}}</div>
+                            <div class="text-muted">uploaded {{formatTimeRelative this.uploadedAt}}</div>
+                        </div>
                     </div>
-                {{/each}}
+                    {{/each}}
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="col-md-3 animated bounceInUp">
+        <div class="panel panel-default panel-body center-block text-center">
+            <h4>Drop files below to upload them instantly</h4><hr>
+            <input type="file" class="custom-file-input" id="uploadFileBar" multiple="multiple">
         </div>
     </div>
 </template>

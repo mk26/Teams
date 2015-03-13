@@ -77,9 +77,6 @@ button:hover, a:hover, label:hover, .option:hover, .selectize-input:hover {
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
-.popover {
-	z-index: 1000;
-}
 .sort-icon {
 	padding-top: 2px;
 }
@@ -241,4 +238,55 @@ button:hover, a:hover, label:hover, .option:hover, .selectize-input:hover {
 }
 .timestamp {
 	color: rgba(180, 180, 180, 0.9);
+}
+
+/* Files UI */
+.fileListPanel {
+	overflow: hidden;
+}
+.fileNameURL {
+	word-wrap:break-word;
+}
+.fileIcon {
+	font-size: 56px;
+	color: rgba(114, 142, 180, 1);
+}
+.imgPreview {
+	width: 72px;
+	height: 72px;
+	-webkit-transition: all 0.2s ease;
+	transition: all 0.2s ease;
+}
+.imgPreview:hover {
+	-webkit-filter: brightness(115%);
+	filter: brightness(115%);
+}
+.fileLink:hover {
+	cursor:  pointer !important;
+}
+.custom-file-input::-webkit-file-upload-button {
+  visibility: hidden;
+}
+.custom-file-input::before {
+  content: '+';
+  display: inline-block;
+  background: white;
+  color: #6b6b6b;
+  text-align: center;
+  border: 2px dashed gray;
+  margin-left: 72px;
+  border-radius: 8px;
+  padding: 25px 45px 25px 45px;
+  -webkit-user-select: none;
+  font-size: 50px;
+}
+.custom-file-input:hover::before {
+  border-color: rgba(86, 152, 244, 1);
+  box-shadow: inset 0px 0px 15px rgba(86, 152, 244, 1);
+  color: rgba(86, 152, 244, 1);
+}
+.custom-file-input:active::before {
+  border-color: rgba(86, 152, 244, 1);
+  box-shadow: inset 0px 0px 30px rgba(86, 152, 255, 1);
+  color: rgba(86, 152, 244, 1);
 }

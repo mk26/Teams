@@ -163,9 +163,8 @@ Files = new FS.Collection("files", {
 });
 
 //TeamFiles
-//TeamFiles = new Mongo.Collection("teamfiles");
-TeamFilesSchema = new SimpleSchema({
-    files: {
+FileSchema = new SimpleSchema({
+    file: {
         type: String,
         label: "File",
         autoform: {
@@ -176,7 +175,6 @@ TeamFilesSchema = new SimpleSchema({
         }
     }
 });
-//TeamFiles.attachSchema(TeamFilesSchema);
 
 //Teams
 Teams = new Mongo.Collection("teams");
@@ -215,7 +213,7 @@ TeamSchema = new SimpleSchema({
         optional: true
     },
     files: {
-        type: [TeamFilesSchema],
+        type: [String],
         label: "Files",
         optional: true
     }
@@ -252,17 +250,27 @@ Messages.allow({
     }
 });
 Files.allow({
-  download: function () {
-    return true;
-  },
-  fetch: null
+    insert: function(userId, doc) {
+        return userId;
+    },
+    update: function(userId, doc) {
+        return userId;
+    },
+    download: function () {
+        return true;
+    },
+    remove: function(userId, doc) {
+        return userId;
+    },
+    fetch: null
 });
 Teams.allow({
     update: function(userId, doc, fieldNames, modifier) {
         var username = Meteor.users.findOne({"_id": userId}, {fields: {username: 1}}).username;
-        if (_.contains(fieldNames, "conversations")) {
+        if (_.contains(fieldNames, "conversations") || _.contains(fieldNames, "files")) {
             return (userId && (doc.admin === username || _.contains(doc.members, username)));
-        } else {
+        } 
+        else {
             return (userId && doc.admin === username);
         }
     }

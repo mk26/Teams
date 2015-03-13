@@ -2,7 +2,19 @@
 
 //Run on server startup
 Meteor.startup(function () {
+	restAPI = new CollectionAPI({
+		authToken: "",
+		apiPath:'api'
+	});
 	
+	restAPI.addCollection(Teams,'teams');
+	restAPI.addCollection(Channels,'channels');
+	restAPI.addCollection(Conversations,'convs');
+	restAPI.addCollection(Messages,'msgs');
+	restAPI.addCollection(Files,'files');
+	restAPI.addCollection(Accounts,'users');
+
+	restAPI.start();
 });
 
 Meteor.methods({
