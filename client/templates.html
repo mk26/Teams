@@ -1,28 +1,35 @@
-<!-- Common -->
-<template name="commonlayout">
-    <div class="container-fluid">
-        <div class="row animated fadeInRight">
+<!-- Teams app - (C) 2015, Karthik - HTML Templates -->
+
+<!-- Common Layout -->
+<template name="common">
+        <div class="row header animated fadeInDown">
+            <div class="pull-left">
+                <a href="/teams" id="teamslink">
+                    <img class="img-circle" src="/images/teams.png" width="50">
+                </a>
+                <span class="pull-right header-logo">TEAMS</span>
+            </div>
             {{#with currentUser}}
             <div class="pull-right">
-                <button id="back" class="btn btn-xs btn-default">
+                <button id="back" class="btn btn-xs mk-header-btn">
                     <span class="glyphicon glyphicon-menu-left"></span>
                 </button>&nbsp;
-                <a href="/teams" id="teamslink">
-                    <img class="img-circle" src="/images/teams.png" width="36">
-                </a>&nbsp;
-                <a class="btn btn-default" href="/account" title="Manage account">
+                <a class="btn mk-header-btn" href="/account" title="Manage account">
                     <span class="glyphicon glyphicon-user"></span>&nbsp;{{#with profile}}{{name}}{{/with}}
                 </a>&nbsp;
-                <button id="logoutb" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Logout">
+                <button id="logoutb" class="btn mk-header-btn mk-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Logout">
                     <span class="glyphicon glyphicon-log-out"></span>
                 </button>
             </div>
             {{/with}}
         </div>
-        <div class="row">
+        <div class="container-fluid row">
             {{> yield}}
         </div>
-    </div>
+        <div class="footer text-muted">
+            <hr>
+            Teams v1.0 &middot; &copy; 2015, Karthik
+        </div>
 </template>
 
 <!-- Errors -->
@@ -50,6 +57,10 @@
 
 <!-- User management -->
 <template name="account">
+    <ol class="breadcrumb animated slideInDown">
+      <li><a href="/teams">Home</a></li>
+      <li class="active">Account Info</li>
+    </ol>
     <div class="col-sm-6 col-sm-offset-3 animated fadeInDown">
         <div class="row">
             <div class="panel panel-info">
@@ -154,8 +165,11 @@
 </template>
 
 <!-- All Teams page -->
-
 <template name="teams">
+    <ol class="breadcrumb animated slideInDown">
+      <li><a href="/">Home</a></li>
+      <li class="active">All Teams</li>
+    </ol>
     <button id="createb" class="btn btn-success animated fadeInDown">
         <span class="glyphicon glyphicon-plus"></span>&nbsp;Create New Team
     </button>
@@ -298,85 +312,12 @@
     </div>
 </template>
 
-
 <!-- Team page -->
-<template name="teaminfo">
-    <div class="col-sm-6 col-sm-offset-3 animated fadeInDown">
-        <div class="row">
-            <div class="panel panel-info">
-                <div class="panel-heading text-center">
-                    <span class="panel-title">
-                        <strong>Team Info</strong>
-                    </span>
-                </div>
-                <div class="panel-body">
-                    <div class="list-group">
-                        <span class="list-group-item">
-                            <h5 class="text-muted">
-                                <strong>Name</strong>
-                            </h5>
-                            <h4>{{name}}</h4>
-                        </span>
-                        <span class="list-group-item">
-                            <h5 class="text-muted">
-                                <strong>Managed by</strong>
-                            </h5>
-                            <h4>{{showName admin}} <span class="text-muted">&lt;{{admin}}&gt;</span></h4>
-                        </span>
-                        <span class="list-group-item">
-                            <h5 class="text-muted">
-                                <strong>Members</strong>
-                            </h5>
-                            {{#if isAdmin}}
-                            <button id="editb" class="btn btn-primary">
-                                <span class="glyphicon glyphicon-pencil"></span>&nbsp;Edit members</button>
-                            <br><br>
-                            <div id="editMembersPanel" hidden>
-                                {{#autoForm collection="Teams" doc=this id="updateMembersForm" type="update" autosave=true}} 
-                                {{> afFormGroup name="members" id="members" label=false class="input-lg"}} 
-                                {{/autoForm}}
-                            </div>
-                            {{/if}}
-                            {{#each members}} 
-                            <h4>{{showName this}}
-                            <span class="text-muted">&lt;{{this}}&gt;</span></h4>
-                            {{/each}}
-                        </span>
-                        {{#if isAdmin}}
-                        <span class="list-group-item">
-                            <h5 class="text-muted">
-                                <strong>Delete Team</strong>
-                            </h5>
-                            <button class="btn btn-danger" data-toggle="modal" data-target="#deleteTeamModal">Delete Team</button>
-                        </span>
-                        <div id="deleteTeamModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="deleteTeamModalLabel">
-                          <div class="modal-dialog modal-md">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                    <h4 id="deleteTeamModalLabel" class="text-danger modal-title">Are you sure you want to delete Team {{name}}?</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <p>
-                                    Deleting team <strong>{{name}}</strong> will immediately remove all its associated data, including messages across all channels and conversations, tasks and shared files.
-                                    </p>
-                                </div>
-                                <div class="modal-footer">
-                                  <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                                  <button id="delb" type="button" class="btn btn-danger">Confirm Deletion</button>
-                                </div>
-                            </div>
-                          </div>
-                        </div>
-                        {{/if}}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <template name="team">
+    <ol class="breadcrumb animated slideInDown">
+      <li><a href="/teams">Teams</a></li>
+      <li class="active">{{this.name}}</li>
+    </ol>
     <h3 class="text-primary">{{name}}&nbsp;
         <button id="infob" class="btn btn-xs btn-primary" data-toggle="tooltip" data-placement="top" title="Team info"><span class="glyphicon glyphicon-info-sign"></span></button>
         <button id="filesb" class="btn btn-xs btn-primary" data-toggle="tooltip" data-placement="top" title="Shared files"><span class="glyphicon glyphicon-file"></span></button>
@@ -682,7 +623,95 @@
     </div>
 </template>
 
+<!-- Team info page -->
+<template name="teaminfo">
+    <ol class="breadcrumb animated slideInDown">
+      <li><a href="/teams">Teams</a></li>
+      <li><a href="/t/{{this._id}}">{{this.name}}</a></li>
+      <li class="active">{{this.name}} - info</li>
+    </ol>
+    <div class="col-sm-6 col-sm-offset-3 animated fadeInDown">
+        <div class="row">
+            <div class="panel panel-info">
+                <div class="panel-heading text-center">
+                    <span class="panel-title">
+                        <strong>Team Info</strong>
+                    </span>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group">
+                        <span class="list-group-item">
+                            <h5 class="text-muted">
+                                <strong>Name</strong>
+                            </h5>
+                            <h4>{{name}}</h4>
+                        </span>
+                        <span class="list-group-item">
+                            <h5 class="text-muted">
+                                <strong>Managed by</strong>
+                            </h5>
+                            <h4>{{showName admin}} <span class="text-muted">&lt;{{admin}}&gt;</span></h4>
+                        </span>
+                        <span class="list-group-item">
+                            <h5 class="text-muted">
+                                <strong>Members</strong>
+                            </h5>
+                            {{#if isAdmin}}
+                            <button id="editb" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-pencil"></span>&nbsp;Edit members</button>
+                            <br><br>
+                            <div id="editMembersPanel" hidden>
+                                {{#autoForm collection="Teams" doc=this id="updateMembersForm" type="update" autosave=true}} 
+                                {{> afFormGroup name="members" id="members" label=false class="input-lg"}} 
+                                {{/autoForm}}
+                            </div>
+                            {{/if}}
+                            {{#each members}} 
+                            <h4>{{showName this}}
+                            <span class="text-muted">&lt;{{this}}&gt;</span></h4>
+                            {{/each}}
+                        </span>
+                        {{#if isAdmin}}
+                        <span class="list-group-item">
+                            <h5 class="text-muted">
+                                <strong>Delete Team</strong>
+                            </h5>
+                            <button class="btn btn-danger" data-toggle="modal" data-target="#deleteTeamModal">Delete Team</button>
+                        </span>
+                        <div id="deleteTeamModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="deleteTeamModalLabel">
+                          <div class="modal-dialog modal-md">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 id="deleteTeamModalLabel" class="text-danger modal-title">Are you sure you want to delete Team {{name}}?</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p>
+                                    Deleting team <strong>{{name}}</strong> will immediately remove all its associated data, including messages across all channels and conversations, tasks and shared files.
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                  <button id="delb" type="button" class="btn btn-danger">Confirm Deletion</button>
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Team Files page -->
 <template name="teamfiles">
+    <ol class="breadcrumb animated slideInDown">
+      <li><a href="/teams">Teams</a></li>
+      <li><a href="/t/{{this._id}}">{{this.name}}</a></li>
+      <li class="active">{{this.name}} - Files</li>
+    </ol>
     <div class="col-md-6 animated fadeIn">
         <div class="panel panel-info fileListPanel">
             <div class="panel panel-title">

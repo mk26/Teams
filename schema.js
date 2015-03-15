@@ -1,3 +1,5 @@
+/* Teams app - (C) 2015, Karthik - Data Schema */
+
 //User Registration
 UserRegSchema = new SimpleSchema({
     name: {
@@ -102,11 +104,6 @@ MessageSchema = new SimpleSchema({
         type: String,
         label: "Sender"
     },
-    to:{
-        type: [String],
-        label: "Recipient",
-        optional:true
-    },
     timestamp:{
         type: String,
         label: "timestamp"
@@ -132,6 +129,9 @@ ChannelSchema = new SimpleSchema({
     }
 });
 Channels.attachSchema(ChannelSchema);
+ChannelSchema.messages ({
+    "required name": "Channel must have a name",
+});
 
 //Conversations
 Conversations = new Mongo.Collection("conversations");
@@ -220,11 +220,10 @@ TeamSchema = new SimpleSchema({
 }); 
 TeamSchema.messages ({
     "required admin": "Team must have an admin",
-    //"required members": "Team must have a minimum of 1 member"
 });
 Teams.attachSchema(TeamSchema);
 
-//Security
+//Security for database operations
 Channels.allow({
     insert: function(userId, doc) {
         return userId;
@@ -256,7 +255,7 @@ Files.allow({
     update: function(userId, doc) {
         return userId;
     },
-    download: function () {
+    download: function() {
         return true;
     },
     remove: function(userId, doc) {

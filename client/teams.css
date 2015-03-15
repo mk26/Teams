@@ -1,14 +1,12 @@
-/* Teams app stylesheet - (C) 2015, Karthik */
+/* Teams app - (C) 2015, Karthik - Stylesheet */
 
 /* Custom Font import from Google Fonts */
 @import url(http://fonts.googleapis.com/css?family=Karla);
 
 /* Common UI elements */
-html {
-	/* -webkit-user-select: none; */
-}
 body {
 	font-family: Karla, Helvetica Neue, sans-serif !important;
+	background: #fbfbfb;
 	padding: 20px;
 	cursor: default;
 	-webkit-font-smoothing: subpixel-antialiased;
@@ -17,6 +15,22 @@ button:hover, a:hover, label:hover, .option:hover, .selectize-input:hover {
 	-webkit-transition: all 0.2s ease;
 	transition: all 0.2s ease;
 	cursor: default !important;
+}
+.header {
+	border-radius: 0px 0px 3px 3px;
+	width: 100%;
+	height: auto;
+	padding: 10px;
+	background-color: rgba(28, 22, 81, 0.820);
+	margin: -20px 0px 15px 0px;
+}
+.header-logo {
+	font-family: Verlag;
+	font-size: 20px;
+	font-weight: 600;
+	color: white;
+	margin-top: 14px;
+	margin-left: 5px;
 }
 #teamslink {
 	text-decoration: none;
@@ -51,6 +65,38 @@ button:hover, a:hover, label:hover, .option:hover, .selectize-input:hover {
 	color: white;
 	box-shadow: none;
 	background-color: rgba(200, 200, 200, 1);
+}
+.mk-header-btn {
+	border: 1px solid white;
+	background-color: transparent;
+	color: white;
+	-webkit-transition: all 0.3s ease;
+	transition: all 0.3s ease;
+}
+.mk-header-btn:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+	/* box-shadow: inset 0px 0px 20px rgba(255,255,255,0.4); */
+	color: white;
+}
+.mk-header-btn:active {
+	color: black;
+	background-color: rgba(255, 255, 255, 1);
+}
+.mk-danger {
+	border-color: rgba(255, 88, 90, 1);
+	color: rgba(255, 88, 90, 1);
+}
+.mk-danger:hover {
+	background-color: rgba(255, 88, 90, 1);
+	color: white;
+}
+.mk-danger:active {
+	border-color:rgba(220, 75, 76, 1);
+	background-color: rgba(220, 75, 76, 1);
+	color: white;
+}
+.breadcrumb > li + li:before {
+	content: "> ";
 }
 
 /* Tokens */
@@ -184,6 +230,10 @@ button:hover, a:hover, label:hover, .option:hover, .selectize-input:hover {
 	margin: 2px 20px 7px 20px;
 	-webkit-animation-duration: 0.5s;
 	animation-duration: 0.5s;
+}
+.bubble-left > a {
+	color: rgba(172, 231, 250, 1);
+	text-decoration: underline;
 }
 .bubble-left:after {
     content: '';

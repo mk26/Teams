@@ -1,3 +1,5 @@
+/* Teams app - (C) 2015, Karthik - Client side methods */
+
 /* Common functions */
 
 //Check whether the current user is the Admin of the Team
@@ -17,12 +19,6 @@ Template.registerHelper('isMember', function() {
         return false;
 });
 
-//Check if none
-UI.registerHelper('isNone', function (obj) {
-	if(obj==0) return true;
-	else return false;
-});
-
 //Map Username to Name
 UI.registerHelper("showName", function(username) {
     var user = Meteor.users.findOne({"username": username});
@@ -30,53 +26,16 @@ UI.registerHelper("showName", function(username) {
         return user.profile.name;
 });
 
+//Detect links in messages
 UI.registerHelper("autoLink", function(text) {
 	return Autolinker.link(text);
 });
 
-//Go Back, Logout
-Template.commonlayout.events({
-    'click #back': function() {
-        history.go(-1);
-    },
-    'click #logoutb': function() {
-        if (Meteor.user()) {
-            Meteor.logout();
-            Router.go('/');
-        }
-    },
-    'mouseover #logoutb': function() {
-        //$('#logoutb').tooltip('show');
-    }
+//Check if no pending tasks
+UI.registerHelper('isNone', function (obj) {
+	if(obj==0) return true;
+	else return false;
 });
-
-//Animate
-function animate(elt,style) {
-	$(elt).removeClass("animated "+style);
-	setTimeout(function() {
-		$(elt).addClass("animated "+style);
-	}, 1);
-}
-
-function notify(title,content) {
-	var iconUrl = "/favicon_32.png";
-    if (!("Notification" in window)) {
-        alert("Sorry, this browser does not support notifications");
-    } 
-    else if (Notification.permission === "granted") {
-        //If permission already available
-        var notification = new Notification(title,{body:content, icon: iconUrl});
-    } 
-    else if (Notification.permission !== 'denied') {
-        //Get permission from User
-        Notification.requestPermission(function(permission) {
-            // If the user is okay, let's create a notification
-            if (permission === "granted") {
-                var notification = new Notification(title,{body:content, icon: iconUrl});
-            }
-        });
-    }
-}
 
 /* Common UI related functions */
 //Init tooltips
@@ -116,7 +75,53 @@ function selectItem(item_id) {
 	}, 200);
 }
 
-/* User Management */
+//Animate
+function animate(elt,style) {
+	$(elt).removeClass("animated "+style);
+	setTimeout(function() {
+		$(elt).addClass("animated "+style);
+	}, 1);
+}
+
+//Notify using HTML5 notifications
+function notify(title,content) {
+	var iconUrl = "/favicon_32.png";
+	if (!("Notification" in window)) {
+		alert("Sorry, this browser does not support notifications");
+	} 
+	else if (Notification.permission === "granted") {
+		//If permission already available
+		var notification = new Notification(title,{body:content, icon: iconUrl});
+	} 
+	else if (Notification.permission !== 'denied') {
+		//Get permission from User
+		Notification.requestPermission(function(permission) {
+			// If the user is okay, let's create a notification
+			if (permission === "granted") {
+				var notification = new Notification(title,{body:content, icon: iconUrl});
+			}
+		});
+	}
+}
+
+//Common layout template
+Template.common.events({
+	'click #back': function() {
+		history.go(-1);
+	},
+	'click #logoutb': function() {
+		if (Meteor.user()) {
+			Meteor.logout();
+			Router.go('/');
+		}
+	}
+});
+
+Template.common.rendered = function() {
+	initTooltips();
+};
+
+//Manage Account page
 Template.account.events({
 	'click #changepassb': function(e, t) {
     	$('#changePassPanel').slideToggle();
@@ -248,9 +253,7 @@ AutoForm.hooks({
     },
     updateMembersForm: {
         formToDoc: function(doc) {
-            var currentMembers = Teams.findOne({
-                "_id": Session.get('currentTeam')
-            }).members;
+            var currentMembers = Teams.findOne({"_id": Session.get('currentTeam')}).members;
             Session.set('currentMembers', currentMembers);
             Session.set('revisedMembers', doc.members);
             return doc;
@@ -379,7 +382,6 @@ AutoForm.addHooks(null, {
     }
 });
 
-/* Teams Functionality */
 
 //All Teams page
 Template.teams.helpers({
@@ -393,14 +395,12 @@ Template.teams.helpers({
 		return result;
 	},
     memteams: function() {
-        return Teams.find({
-            'members': Meteor.user().username
-        });
+	    //Find members of the team
+        return Teams.find({'members': Meteor.user().username});
     },
     adminteams: function() {
-        return Teams.find({
-            'admin': Meteor.user().username
-        });
+	    //Find the admin of the team
+        return Teams.find({'admin': Meteor.user().username});
     },
     tasks: function() {
         var result = [];
@@ -426,10 +426,12 @@ Template.teams.helpers({
                 }
             });
         });
+        //Calculate pending tasks
         var count = _.where(result, {status:false}).length;
         Session.set('userPendingTasks',count);
         result = Session.get('archived') ? result : _.where(result, {status:false});
         initTooltips();
+        //React to Search queries
         var keyword = Session.get('taskSearchKeyword');
         if(keyword) {
 	        var field = $('.searchType')[0].selectize.getValue();
@@ -441,6 +443,7 @@ Template.teams.helpers({
 				else return task[field].match(new RegExp(keyword,"i"))
 		    });
 		}
+		//React to sort specifier
         var sort_order = Session.get('sortOrder') || "due";
         return _.sortBy(result, function(e) {
             return e[sort_order];
@@ -490,6 +493,7 @@ Template.teams.events({
 	    Session.set('taskSearchKeyword',e.target.value);
     },
     'blur .tasknotes': function(e) {
+	    //Save task note
     	var task_id = e.target.id.split("-")[1];
     	Meteor.call('updateTaskNotes', task_id, e.target.value, function(error, result) {});
     }
@@ -519,9 +523,8 @@ Template.team.helpers({
         var yourCount = _.where(tasks, {status:false, assignedto:Meteor.user().username}).length;
         Session.set('yourPendingTasks',yourCount);
         tasks = Session.get('archived') ? tasks : _.where(tasks, {status:false});
-        //Sort Order
-        var sort_order = Session.get('sortOrder') || "due";
         initTooltips();
+        //React to search query
         var keyword = Session.get('taskSearchKeyword');
         if(keyword) {
         	var field = $('.searchType')[0].selectize.getValue();
@@ -536,6 +539,8 @@ Template.team.helpers({
         		}
         	});
         }
+        //React to sort specifier
+        var sort_order = Session.get('sortOrder') || "due";
         return _.sortBy(tasks, function(e) {
             return e[sort_order];
         });
@@ -563,6 +568,7 @@ Template.team.helpers({
         return Channels.findOne({"_id": Session.get('currentChannel')});
     },
     channelMessages: function() {
+	    //Paginate the loading of messages (default limit = 10)
 	    var msgLimit = Session.get('msgLimit') || 10;
 	    var query = Messages.find({"_id": {$in : this.messages}},{sort: {timestamp: -1}, limit:msgLimit});
 	    setTimeout(function () {
@@ -598,6 +604,7 @@ Template.team.helpers({
     	return Conversations.findOne({"_id": Session.get('currentConv')});
     },
     convMessages: function() {
+	    //Paginate the loading of messages (default limit = 10)
 	    var msgLimit = Session.get('msgLimit') || 10;
     	var query = Messages.find({"_id": {$in : this.messages}},{sort: {timestamp: -1}, limit:msgLimit});
     	setTimeout(function () {
@@ -635,6 +642,7 @@ Template.team.helpers({
    	  		else return false;
    	},
    	pendingTasks : function() {
+	   	//Common pending tasks
    		var result = "";
    		if (Session.get('teamPendingTasks') == 0)
    		 	result = 0;
@@ -644,6 +652,7 @@ Template.team.helpers({
    		return result;
    	},
    	yourPendingTasks : function() {
+	   	//User's pending tasks
    		var result = "";
    		if (Session.get('yourPendingTasks') == 0)
    		 	result = 0;
@@ -674,12 +683,8 @@ Template.team.events({
     },
     'click .markTask': function(e) {
 	    var taskItem = $(e.target.parentNode.parentNode);
-	    if(e.target.checked)
-	    	//animate(taskItem, "flipOutX");
-	    	taskItem.removeClass("fadeInUp").addClass("flipOutX");
-	    else 
-	    	//animate(taskItem, "bounceIn");
-	    	taskItem.removeClass("fadeInUp").addClass("bounceIn");
+	    if(e.target.checked) taskItem.removeClass("fadeInUp").addClass("flipOutX");
+	    else taskItem.removeClass("fadeInUp").addClass("bounceIn");
 	    var temp=this;
 	    taskItem.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
 		   	taskItem.removeClass("flipOutX bounceIn").addClass("fadeInUp");
@@ -794,12 +799,12 @@ Template.teamfiles.helpers({
 		return Files.find({"_id": {$in : this.files}}).fetch();
 	},
 	formatSize: function(bytes){
-		if      (bytes>=1000000000) {bytes=(bytes/1000000000).toFixed(2)+' GB';}
-		else if (bytes>=1000000)    {bytes=(bytes/1000000).toFixed(2)+' MB';}
-		else if (bytes>=1000)       {bytes=(bytes/1000).toFixed(2)+' KB';}
-		else if (bytes>1)           {bytes=bytes+' bytes';}
-		else if (bytes==1)          {bytes=bytes+' byte';}
-		else                        {bytes='0 byte';}
+		if (bytes>=1000000000) bytes = (bytes/1000000000).toFixed(2) + ' GB';
+		else if (bytes>=1000000) bytes = (bytes/1000000).toFixed(2) + ' MB';
+		else if (bytes>=1000) bytes = (bytes/1000).toFixed(2) + ' KB';
+		else if (bytes>1) bytes = bytes + ' bytes';
+		else if (bytes==1) bytes = bytes + ' byte';
+		else bytes = 'Zero bytes';
 		return bytes;
 	},
 	formatTimeRelative: function(time) {
@@ -812,7 +817,7 @@ Template.teamfiles.helpers({
 
 Template.teamfiles.events({
 	'change #uploadFileBar': function(e,t) {
-		notify("Teams","File uploaded");
+		//Upload each file that is chosen / dropped onto the file chooser box 
 		FS.Utility.eachFile(e, function(file) {
 			Files.insert(file, function (error, fileObj) {
 				if (error) 
@@ -821,6 +826,8 @@ Template.teamfiles.events({
 					Teams.update({"_id": Session.get('currentTeam')}, {$addToSet: {"files": fileObj._id}});
 		});
 	});
+		//Notify user about file upload and clear the file chooser
+		notify("Teams","File uploaded");
 		$("#uploadFileBar").replaceWith($("#uploadFileBar").clone());
 	},
 	'click .delFileb': function(e,t) {

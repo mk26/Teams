@@ -1,9 +1,10 @@
-/* Server side methods */
+/* Teams app - (C) 2015, Karthik - Server side methods */
 
 //Run on server startup
 Meteor.startup(function () {
+	//REST services
 	restAPI = new CollectionAPI({
-		authToken: "",
+		authToken: "mkteams",
 		apiPath:'api'
 	});
 	
@@ -12,7 +13,6 @@ Meteor.startup(function () {
 	restAPI.addCollection(Conversations,'convs');
 	restAPI.addCollection(Messages,'msgs');
 	restAPI.addCollection(Files,'files');
-	restAPI.addCollection(Accounts,'users');
 
 	restAPI.start();
 });
@@ -144,6 +144,7 @@ Meteor.methods({
 		});
 	},
 	updateTaskNotes: function(task_id, notes) {
+		//Update task's notes
 		Teams.update({
 			"tasks._id" : task_id
 			},
@@ -169,14 +170,5 @@ Meteor.methods({
 		Teams.update({"_id":t_id},{$pull: {channels : channel_id}});
 		if(messages) Messages.remove({"_id": {$in : messages}});
 		Channels.remove({"_id":channel_id});
-	},
-	getEmailNamePair: function(t_id) {
-		var members = Teams.findOne({"_id":t_id},{fields:{members:1}}).members;
-		var result = {};
-		members.forEach(function(member, i) {
-			var name = Meteor.users.findOne({"username": member}).profile.name;
-			result[member] = name + " <" + member + ">";
-		});
-		return result;
 	}
 });
